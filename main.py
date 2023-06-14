@@ -2,9 +2,9 @@ from pyannote.audio import Pipeline, Audio
 
 import pandas as pd
 
+
 # from IPython.display import Audio as IPythonAudio
 # from pyannote.database.util import load_rttm
-
 
 
 # def with_ground_truth():
@@ -65,7 +65,6 @@ import pandas as pd
 #             # Add the speaker turn to the ground truth annotation
 #             ground_truth[segment] = speaker
 
-
 def test_anote(my_wav):
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
                                         use_auth_token="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")
@@ -77,56 +76,73 @@ def test_anote(my_wav):
     times = []
     for turn, _, speaker in diarization.itertracks(yield_label=True):
         print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
-        times.append((round(turn.start,1), round(turn.end,1)))
+        times.append((round(turn.start, 1), round(turn.end, 1)))
     return times
 
-
-def is_speaker(times, excel_path):
-    # for row in excel, find time of dirarization (greater and smaller than)
+    # for row in excel, find time of dirarization
     # find which speaker the coordinates of y62-y66 or x somehow are changed in that time
-    # for the whole range of sampling
-    # the speaker is the one which has the larger movement
-    df = pd.read_csv(excel_path,  usecols=['timestamp','y_66', 'y_62'], engine ='python',encoding= 'unicode_escape')
+    # for the whole range of sampling, the speaker is the one which has the larger movement
+def is_speaker(times, excel_path):
+    df = pd.read_csv(excel_path, usecols=['timestamp', 'y_66', 'y_62'], engine='python', encoding='unicode_escape')
     y_66, y_62 = df['y_66'], df['y_62']
     timestamp = df['timestamp']
-    baseline = abs(y_66[1]-y_62[1])
+    baseline = abs(y_66[1] - y_62[1])
     final = []
-    j=0
-    ctr_open, ctr_close=0,0
-    n=len(times)
+    j = 0
+    ctr_open, ctr_close = 0, 0
+    n = len(times)
     for i in range(len(y_66)):
-        if timestamp[i] > times[j][1]: # we past prev speaker time
+        if timestamp[i] > times[j][1] + 1:  # we past prev speaker time
             final.append((times[j][0], times[j][1], False))
-            j+=1
-            if j>n:
+            j += 1
+            if j == n:
                 print("finished, i is:", i)
                 break
-        elif timestamp[i]> times[j][0] and timestamp[i] < times[j][1]: # TODO: check times conversion
-            if abs(y_66[i] - y_62[i]) > 1+baseline: # mouth open
-                ctr_open+=1  # he is the speaker
-                if ctr_open>=2 and ctr_close>=2:
+        elif times[j][0] + 1 < timestamp[i] < times[j][1]:
+            if abs(y_66[i] - y_62[i]) > 1 + baseline:  # mouth open
+                ctr_open += 1  # he is the speaker
+                if ctr_open >= 2 and ctr_close >= 2:
                     final.append((times[j][0], times[j][1], True))
-                    j+=1
-            elif abs(y_66[i] - y_62[i]) < 1 + baseline: #mouth close
-                ctr_close+=1
+                    j += 1
+                    if j == n:
+                        print("finished, i is:", i)
+                        break
+            elif abs(y_66[i] - y_62[i]) < 1 + baseline:  # mouth close
+                ctr_close += 1
     return final
 
-    #final_out = using_visual_data(time_speaker, path)
-# def using_visual_data(times, path):
-#     final = [] # has tuple of speaker and start, stop
-#     for j in range(len(times)):
-#         print(times[j][0], times[j][1])
-#
-#         #final.append((is_speaker(times[j][0]*60, times[j][1]*60, path), times[j]))
-#
-#     return final
+
+def compare_outputs(out1, out2):
+    for i in range(len(out1)):
+        if out1[i][2] == out2[i][2]:
+            print("conflict at i ", i, out1[i][0])
+    print("finished loop")
+
+
+def run_s_i(csv1, wav1):
+    time_speaker = test_anote(wav1)
+    final_out1 = is_speaker(time_speaker, csv1)
+    print(final_out1)
+    return final_out1
 
 
 if __name__ == '__main__':
-    #with_ground_truth()
-    #time_speaker = test_anote("data/220_EMO_S.wav")
-    time_speaker = test_anote("data/combined_vid1.wav")
-    #path = 'data/220_EMO_S.csv'
-    path = "data/test.csv"
-    final_out = is_speaker(time_speaker, path)
-    print(final_out)
+    csv1 = 'data/220_EMO_S.csv'
+    wav1 = "data/220_EMO_S.wav"
+    out1 = run_s_i(csv1, wav1)
+
+    csv2 = 'data/220_EMO_I.csv'
+    wav2 = "data/220_EMO_I.wav"
+    out2 = run_s_i(csv2, wav2)
+    compare_outputs(out1, out2)
+
+
+
+    # time_speaker = test_anote("data/220_EMO_S.wav")
+    # #time_speaker = test_anote("data/combined_vid1.wav")
+    # path = 'data/220_EMO_S.csv'
+
+    # wav1 = "data/combined_vid1.wav"
+    # csv1 = "data/test.csv"
+    # run_s_i(csv1, wav1)
+
