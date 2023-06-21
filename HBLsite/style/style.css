@@ -1,0 +1,107 @@
+/* Global Reset */
+body, h1, h2, p, ul, li {
+  margin: 0;
+  padding: 0;
+}
+
+/* Body styles */
+body {
+  font-family: 'Arial', sans-serif;
+}
+
+/* Header styles */
+header {
+  background-color: #f2f2f2;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  color: #333;
+  font-size: 50px;
+  font-family: 'Oswald', sans-serif; 
+}
+
+/* Navigation styles */
+nav {
+  background-color: #333;
+  color: #fff;
+  padding: 25px;
+}
+
+ul.horizontal-nav {
+  list-style-type: none;
+  display: flex;
+  justify-content: space-between;
+  width: 1000px;
+  margin: 0 auto;
+}
+
+ul.horizontal-nav li {
+  margin-right: 20px;
+}
+
+ul.horizontal-nav li:last-child {
+  margin-right: 0;
+}
+
+ul.horizontal-nav li a {
+  color: #ffa7a7;
+  font-size: 20px;
+  text-decoration: none;
+}
+
+/* Main content styles */
+main {
+  margin: 20px;
+}
+
+section {
+  margin-bottom: 30px;
+}
+
+h2 {
+  color: #333;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+p {
+  color: #555;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Title block styles */
+.title-block {
+  background-color: #e2e2e2;
+  padding: 20px;
+  text-align: center;
+}
+
+.title-block h2 {
+  color: #a56969;
+  font-size: 36px;
+  font-family: 'Montserrat', sans-serif; /* Replace 'Italian Font' with the actual font name you want to use */
+  margin-bottom: 10px;
+}
+
+.title-block p {
+  background-color: #f2f2f2;
+  padding: 10px;
+  color: #333;
+  font-size: 18px;
+  border-radius: 5px;
+}
+
+/* Footer styles */
+footer {
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+footer p {
+  margin: 0;
+}
