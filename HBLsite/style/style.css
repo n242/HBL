@@ -1,19 +1,18 @@
-/* Global Reset */
 body, h1, h2, p, ul, li {
   margin: 0;
   padding: 0;
 }
 
-/* Body styles */
 body {
   font-family: 'Arial', sans-serif;
+  background-color: #c9c8d1;
 }
 
-/* Header styles */
 header {
   background-color: #f2f2f2;
   padding: 20px;
   text-align: center;
+  background-color: #bab6d8;
 }
 
 h1 {
@@ -49,9 +48,36 @@ ul.horizontal-nav li a {
   color: #ffa7a7;
   font-size: 20px;
   text-decoration: none;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s;
+  white-space: nowrap;
 }
 
-/* Main content styles */
+.horizontal-nav li a::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #978f8f;
+  border-radius: 30%;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.3s, opacity 0.3s;
+  z-index: -1;
+  top: 0;
+  left: 0;
+}
+
+.horizontal-nav li a:hover {
+  transform: translateY(-5px);
+}
+
+.horizontal-nav li a:hover::before {
+  transform: scale(1.2);
+  opacity: 0.3;
+}
+
 main {
   margin: 20px;
 }
@@ -70,19 +96,20 @@ p {
   color: #555;
   font-size: 16px;
   line-height: 1.5;
+  border-radius: 5px;
 }
 
-/* Title block styles */
 .title-block {
   background-color: #e2e2e2;
   padding: 20px;
   text-align: center;
+  border-radius: 5px;
 }
 
 .title-block h2 {
   color: #a56969;
   font-size: 36px;
-  font-family: 'Montserrat', sans-serif; /* Replace 'Italian Font' with the actual font name you want to use */
+  font-family: 'Montserrat', sans-serif;
   margin-bottom: 10px;
 }
 
@@ -94,7 +121,6 @@ p {
   border-radius: 5px;
 }
 
-/* Footer styles */
 footer {
   background-color: #333;
   color: #fff;
@@ -104,4 +130,25 @@ footer {
 
 footer p {
   margin: 0;
+}
+
+.fade-in {
+  opacity: 0;
+  animation: fade-in-animation 2s forwards;
+}
+
+.slide-up {
+  opacity: 0;
+  transform: translateY(50px);
+  animation: slide-up-animation 2s forwards;
+}
+
+.scale-in {
+  opacity: 0;
+  transform: scale(0.8);
+  animation: scale-in-animation 2s forwards;
+}
+@keyframes fade-in-animation {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
