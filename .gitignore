@@ -2,3 +2,4 @@ data/
 pretrained_models/
 simple-diarizer.py
 .idea/
+output_wavs/
