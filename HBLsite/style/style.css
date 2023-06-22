@@ -15,6 +15,10 @@ header {
   background-color: #bab6d8;
 }
 
+#term-definitions ul {
+  list-style-type: none;
+}
+
 h1 {
   color: #333;
   font-size: 50px;
@@ -135,21 +139,40 @@ footer p {
 
 .fade-in {
   opacity: 0;
-  animation: fade-in-animation 2s forwards;
+  animation: fade-in-animation 1s forwards;
 }
 
 .slide-up {
   opacity: 0;
   transform: translateY(50px);
-  animation: slide-up-animation 2s forwards;
+  animation: slide-up-animation 1s forwards;
 }
 
 .scale-in {
   opacity: 0;
   transform: scale(0.8);
-  animation: scale-in-animation 2s forwards;
+  animation: scale-in-animation 1s forwards;
 }
 @keyframes fade-in-animation {
   0% { opacity: 0; }
   100% { opacity: 1; }
+}
+
+.blue-link {
+  color: blue; /* Default link color */
+  text-decoration: none; /* Remove underline */
+}
+
+.blue-link:visited {
+  color: blue; /* Visited link color */
+}
+
+.blue-link:hover,
+.blue-link:focus {
+  color: blue; /* Hover and focus link color */
+  text-decoration: underline; /* Add underline on hover and focus */
+}
+
+#about p {
+  font-size: 20px;
 }
