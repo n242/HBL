@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Speaker Diarization</title>
   <link rel="stylesheet" href="style/style.css">
 </head>
+
 <body>
   <!-- Header -->
   <header>
@@ -16,13 +18,13 @@
   <nav class="animate">
     <ul class="horizontal-nav">
       <li><a href="#goal">Goal</a></li>
+      <li><a href="#term-definitions">Terms Definitions</a></li>
       <li><a href="#progress">Progress</a></li>
       <li><a href="#methods">Methods</a></li>
       <li><a href="#implementation">Implementation</a></li>
       <li><a href="#results">Results</a></li>
       <li><a href="#future-improvements">Future Improvements</a></li>
       <li><a href="#about">About</a></li>
-      <li><a href="#terms-of-use">Terms of Use</a></li>
     </ul>
   </nav>
 
@@ -32,15 +34,107 @@
     <section id="goal" class="title-block">
       <h2>Goal</h2>
       <p>
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
+        The goal of this project is to develop a speaker recognition system specifically designed for analyzing videos
+        recorded during the administration of the ADOS test for Autism. In this experimental setup, three cameras
+        capture the interactions between the clinician and the subjects.
+      </p>
+      <p>
+        The primary objective is to automatically determine the video frames where the clinician is speaking and
+        differentiate them from the frames where the subjects are speaking. This information is crucial for analyzing
+        the ADOS exam and understanding the dynamics of the test.
+      </p>
+      <p>
+        The system will leverage both audio and video signals to achieve speaker recognition. The characteristics of the
+        audio signal, such as pitch and intensity, will be utilized alongside visual cues, such as the movement of the
+        mouth, to identify speaking episodes. Machine learning methods will be employed to accurately determine the
+        start and end frames of speech for each speaker.
+      </p>
+      <p>
+        By successfully recognizing the speakers in the ADOS test administration videos, the system aims to facilitate
+        further analysis, interpretation, and understanding of the test outcomes. This technology can significantly
+        contribute to cognitive development research and assist clinicians in evaluating and diagnosing Autism.
       </p>
     </section>
+    <!-- Term Definitions -->
+    <section id="term-definitions" class="title-block">
+      <h2>Terms Definitions</h2>
+      <ul>
+        <li>
+          <h3>Autism</h3>
+          <p>
+            Autism, or Autism Spectrum Disorder (ASD), is a neurodevelopmental disorder that affects communication,
+            social interaction, and behavior. It is characterized by difficulties in social interaction, repetitive
+            patterns of behavior, and challenges with verbal and nonverbal communication.
+          </p>
+        </li>
+        <li>
+          <h3>ADOS</h3>
+          <p>
+            ADOS stands for Autism Diagnostic Observation Schedule. It is a standardized assessment tool used to
+            diagnose autism and evaluate social communication, interaction, and behavior in individuals suspected of
+            having autism spectrum disorders.
+          </p>
+        </li>
+        <li>
+          <h3>Intensity</h3>
+          <p>
+            Intensity, in the context of audio signal analysis, refers to the strength or power of a sound wave. It is a
+            measure of the amplitude or loudness of the sound signal.
+          </p>
+        </li>
+        <li>
+          <h3>Pitch</h3>
+          <p>
+            Pitch refers to the perceived frequency of a sound. It determines the highness or lowness of a sound. In
+            speech, pitch variation helps convey intonation and emotional expression.
+          </p>
+        </li>
+      </ul>
+    </section>
+
 
     <!-- Progress -->
     <section id="progress" class="title-block">
       <h2>Progress</h2>
       <p>
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
+        Let's begin by providing an overview of the approach. We started by exploring various libraries that could
+        assist us in solving or aiding the solution to our problem. One of the libraries we tried was
+        <em>resembelyzer</em>, but unfortunately, it did not meet our requirements.
+      </p>
+
+      <p>
+        Despite the initial setback, we remained determined to find a suitable solution, as we believed that the problem
+        of speaker recognition during the ADOS test administration is well-known, and there must be a library or method
+        available to tackle it effectively. Our next approach involved leveraging the setup of three cameras to identify
+        the camera capturing higher voice intensity. However, this approach proved unsuccessful due to inadequate
+        calibration of the cameras' microphones.
+      </p>
+
+      <p>
+        Undeterred, we pursued an alternative strategy utilizing the OpenFace CSV files to track instances when the
+        mouth is open, indicating that the person is speaking. This method yielded promising results for the subjects
+        being evaluated, providing us with valuable insights. However, when it came to the interviewer, who was a
+        constant presence in all the videos, her tendency to smile made it challenging to accurately determine when she
+        was speaking. Although the results were promising, they fell short of the accuracy we required.
+      </p>
+
+      <p>
+        At this point, we decided to revisit the <em>Pyannote</em> library, recognizing its potential in resolving our
+        speaker recognition challenge. Utilizing Pyannote, we achieved excellent results in identifying speakers and
+        their respective speech intervals. We are excited to present these significant findings later on this page.
+      </p>
+
+      <p>
+        One limitation we encountered with Pyannote was its reliance on a clean audio signal without distortions. To
+        mitigate this issue, we implemented audio signal cleaning techniques as a preprocessing step before applying the
+        diarization code. This optimization significantly enhanced the accuracy and reliability of the results obtained
+        from Pyannote.
+      </p>
+
+      <p>
+        Throughout the project, we experimented with multiple approaches, constantly adapting and refining our methods
+        based on the insights gained. Our relentless pursuit of an effective solution has brought us closer to
+        successfully addressing the speaker recognition challenge in the ADOS test administration.
       </p>
     </section>
 
@@ -48,7 +142,8 @@
     <section id="methods" class="title-block">
       <h2>Methods</h2>
       <p>
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
+        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet
+        soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
       </p>
     </section>
 
@@ -56,24 +151,28 @@
     <section id="implementation" class="title-block">
       <h2>Implementation</h2>
       <p>
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
+        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet
+        soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
       </p>
-      <p>You can access the code on <a href="https://github.com/n242/HBL" target="_blank">GitHub</a></p>
+      <p>You can access the code on <a href="https://github.com/n242/HBL" target="_blank" class="blue-link">GitHub</a>
+      </p>
     </section>
 
     <!-- Results -->
     <section id="results" class="title-block">
-        <h2>Results</h2>
-        <p>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
-        </p>
+      <h2>Results</h2>
+      <p>
+        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet
+        soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
+      </p>
     </section>
 
     <!-- Future Improvements -->
     <section id="future-improvements" class="title-block">
       <h2>Future Improvements</h2>
       <p>
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
+        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet
+        soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
       </p>
     </section>
 
@@ -81,16 +180,24 @@
     <section id="about" class="title-block">
       <h2>About</h2>
       <p>
-        Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nam, laudantium asperiores non vitae eaque eveniet soluta quidem id minus optio quos, velit eius culpa sed necessitatibus dignissimos sit dolorum assumenda?
+        This project was submitted by <a href="https://github.com/faisalomari" target="_blank" class="blue-link">Faisal
+          Omari</a> and <a href="https://github.com/n242" target="_blank" class="blue-link">Neta Oren</a> in the
+        Computational Research of Human Behavior course as part of their B.Sc. and M.Sc. in Computer Science at the <a
+          href="https://www.haifa.ac.il/" target="_blank" class="blue-link">University of Haifa</a> .
+      </p>
+      <p>
+        The project was performed under the supervision of <a href="https://cs.haifa.ac.il/~hagit/" target="_blank"
+          class="blue-link">Prof. Hagit Hel-Or</a>.
       </p>
     </section>
   </main>
 
   <!-- Footer -->
   <footer>
-    <p>© 2023 by Faisal Omari and Neta Oren. All rights reserved.</p>
+    <p>© 2023 by Neta Oren and Faisal Omari. All rights reserved.</p>
   </footer>
-  
+
   <script src="script.js"></script>
 </body>
+
 </html>
