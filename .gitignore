@@ -3,3 +3,4 @@ pretrained_models/
 simple-diarizer.py
 .idea/
 output_wavs/
+__pycache__/
