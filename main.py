@@ -3,7 +3,7 @@ from scipy.io.wavfile import read as read_wav
 import pandas as pd
 import visualization
 import numpy as np
-
+import soundfile as sf
 
 def pyannote_diarization(my_wav):
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
@@ -22,7 +22,6 @@ def pyannote_diarization(my_wav):
     # for row in excel, find time of dirarization
     # find which speaker the coordinates of y62-y66 or x somehow are changed in that time
     # for the whole range of sampling, the speaker is the one which has the larger movement
-
 
 def diarization_w_smoothing(my_wav):
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
@@ -142,23 +141,23 @@ def clear_audio_librosa(in_wav, out_wav='output.wav'):
     # Save the filtered audio as a new WAV file
     sf.write(out_wav, filtered_audio, sample_rate)
 
-
 if __name__ == '__main__':
     # wav1 = "data/1_Story_B.wav"
     #wav1 = "data/1_STORY_SUBJECT.wav"
-    wav1 = "data/2_Emo_I.wav"
+    # wav1 = "data/2_Emo_I.wav"
+    wav1 = "/media/faisal/RE_AS/REASEARCHASSISTANT/RECORDS/record2/2_STORY_BOTH.wav"
 
     #clear_audio_librosa(wav1, out_wav='out_librosa3.wav')
 
     diarization_smooth, diarization = diarization_w_smoothing(wav1)
+    
+    # sampling_rate, data = read_wav(wav1)
+    data, sampling_rate = sf.read(wav1)
+    visual = visualization.Vizualization(wav1, sampling_rate, data)
 
-    sampling_rate, data = read_wav(wav1)
-    visual = visualization.Vizualization(wav1, sampling_rate)
+    list_speaker_times0 = visual.diarization_for_plot(diarization_smooth)
+    # visual.plot_animation(list_speaker_times0)
+    # visual.plot_diarization(list_speaker_times0)
 
-    list_speaker_times = visual.diarization_for_plot(diarization_smooth)
-    visual.plot_animation(list_speaker_times)
-    visual.plot_diarization(list_speaker_times)
-
-    # time_speaker = pyannote_diarization("data/220_EMO_S.wav")
-    # #time_speaker = pyannote_diarization("data/combined_vid1.wav")
-    # wav1 = "data/combined_vid1.wav"
+    list_speaker_times1 = visual.diarization_for_plot1(diarization_smooth)
+    visual.plot_animation2(list_speaker_times1) #Animation with background audio, works with diarization_for_plot1
