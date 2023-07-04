@@ -3,7 +3,7 @@ from time import sleep, perf_counter as timer
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as animation
-
+import sounddevice as sd
 import matplotlib.lines as mlines
 from matplotlib import colors as mlpColors
 
@@ -11,9 +11,11 @@ _default_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
 
 class Vizualization:
-    def __init__(self, wav, sampling_rate):
+    def __init__(self, wav, sampling_rate, data):
         self.SAMPLE_RATE = sampling_rate
         self.wav = wav
+        self.audio = data
+        self.times_list = []
 
     def play_wav(self, blocking=True):
         try:
@@ -29,20 +31,44 @@ class Vizualization:
         final_list = []
         max_diar = len(gen_diarization)
         times = np.arange(0, gen_diarization[-1][1], 1)  # arr from 0 to end of audio
+        print(times)
         j = 0
         for i in range(len(times)):
-            if gen_diarization[j][0] < times[i] < gen_diarization[j][1]:
-                if gen_diarization[j][2] == "SPEAKER_00":
-                    final_list.append(1)
-                else:
-                    final_list.append(2)
-            if times[i] >gen_diarization[j][1] and j< max_diar and times[i] <gen_diarization[j+1][0]:
-                final_list.append(0)
-            else:  # no speaker
-                j += 1
-
+            if j < max_diar:
+                if gen_diarization[j][0] < times[i] < gen_diarization[j][1]:
+                    if gen_diarization[j][2] == "SPEAKER_00":
+                        final_list.append(0)
+                    else:
+                        final_list.append(1)
+                # elif times[i] > gen_diarization[j][1] and j + 1 < max_diar and times[i] < gen_diarization[j+1][0]:
+                #     final_list.append(0)
+                elif times[i]<gen_diarization[j][0]:  # no speaker
+                    j += 0
+                else:  # no speaker
+                    j += 1
+        self.times_list = final_list
         return final_list
 
+    def diarization_for_plot1(self, gen_diarization):
+        final_list = []
+        max_diar = len(gen_diarization)
+        times = np.arange(0, gen_diarization[-1][1], 1)  # arr from 0 to end of audio
+        print(times.shape)
+        j = 0
+        for i in range(len(times)):
+            if j < max_diar:
+                if gen_diarization[j][0] < times[i] < gen_diarization[j][1]:
+                    if gen_diarization[j][2] == "SPEAKER_00":
+                        final_list.append(0)
+                    else:
+                        final_list.append(1)
+
+                elif times[i]>gen_diarization[j][1]:
+                    final_list.append(-1)
+                    j += 1
+                else:
+                    final_list.append(-1)
+        return final_list
 
     """
     I get the following error:  in diarization_for_plot
@@ -68,8 +94,8 @@ IndexError: list index out of range
                    label=("No Speaker", "Marissa", "Interviewee"))  #
         plt.xlabel('time(s)')
         plt.grid()
-        plt.show()
         plt.savefig('diarization.png')
+        plt.show()
 
         return
 
@@ -105,3 +131,49 @@ IndexError: list index out of range
         plt.show()
 
         ani.save('animation.gif',writer='pillow', fps=30)
+
+    def plot_animation2(self, final_list):
+        # Load the audio
+        audio = self.audio
+        audio_duration = len(audio) / self.SAMPLE_RATE
+
+        # Setup figure and animation parameters
+        fig = plt.figure(figsize=(5, 4))
+        ax = fig.add_subplot(1, 1, 1)
+        repeat_length = 25
+        ax.set_xlim([0, repeat_length])
+        ax.set_ylim([-1.1, 1.1])
+        im, = ax.plot([], [])
+
+        # Define the animation update function
+        def update_animation(frame):
+            # Calculate the time in seconds for the current frame
+            time = frame / audio_duration
+
+            # Set the animation data
+            im.set_xdata(np.arange(frame))
+            im.set_ydata(final_list[:frame])
+
+            # Update the x-axis limits based on the current time
+            if frame > repeat_length:
+                lim = ax.set_xlim(frame - repeat_length, frame)
+            else:
+                lim = ax.set_xlim(0, repeat_length)
+
+            return im
+
+        # Calculate the frame duration in milliseconds
+        frame_duration = 1000
+
+        # Create the animation
+        ani = animation.FuncAnimation(fig, update_animation, frames=int(len(audio)/self.SAMPLE_RATE), interval=frame_duration, blit=False)
+
+
+        # Play the audio in the background
+        sd.play(audio, self.SAMPLE_RATE, blocking=False)
+
+        # Display the animation
+        plt.show()
+
+        # Save the animation as a GIF
+        ani.save('animation2.gif', writer='pillow', fps=30)
