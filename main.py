@@ -1,9 +1,11 @@
 from pyannote.audio import Pipeline
 from scipy.io.wavfile import read as read_wav
 import pandas as pd
+from moviepy.editor import VideoFileClip
 import visualization
-import numpy as np
 import soundfile as sf
+import noise_clean
+
 
 def pyannote_diarization(my_wav):
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
@@ -29,12 +31,38 @@ def diarization_w_smoothing(my_wav):
     diarization = pipeline(my_wav)
     times = []
     for turn, _, speaker in diarization.itertracks(yield_label=True):
-        print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
+        #print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
         if len(times) >= 1 and times[-1][2] == speaker and abs(turn.start - times[-1][1]) < 1:
             # print(f"concatenated at{turn.end}")
             times[-1] = ((times[-1][0], round(turn.end, 1), speaker))
         else:
             times.append((round(turn.start, 1), round(turn.end, 1), speaker))
+    for i in range(len(times)):
+        print(times[i])
+    return times, diarization
+
+def legal_diarization_smoothing(my_wav):
+    pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
+                                        use_auth_token="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")
+    diarization = pipeline(my_wav)
+    times = []
+    #TODO: add dictionary of speakers count how many times it detects each speaker
+    speakers={"SPEAKER_00":0, "SPEAKER_01":0}
+    for turn, _, speaker in diarization.itertracks(yield_label=True):
+        if str(speaker)=="SPEAKER_02":
+            print("detected 3 speakers, bad diarization")
+        #print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
+        if len(times) >= 1 and times[-1][2] == speaker and abs(turn.start - times[-1][1]) < 1:
+            # print(f"concatenated at{turn.end}")
+            times[-1] = ((times[-1][0], round(turn.end, 1), speaker))
+            speakers[speaker] += 1
+        else:
+            times.append((round(turn.start, 1), round(turn.end, 1), speaker))
+            speakers[speaker]+=1
+    if len(times)>3:   # check diarization is only for one speaker for the longer vids
+        for key, val in speakers.items():
+            if val<3:
+                print(f"speaker {key} had only {val} occurences")
     for i in range(len(times)):
         print(times[i])
     return times, diarization
@@ -96,58 +124,18 @@ def main_excel():
     compare_outputs(out1, out2)
 
 
-def clear_audio_wiener(in_wav, out_wav='output.wav'):
-    from scipy.io import wavfile
-    from scipy.signal import wiener
-
-    # Load the audio file
-    sample_rate, audio_data = wavfile.read(in_wav)
-
-    # Convert the audio data to float64 format
-    audio_data = audio_data.astype(np.float64)
-
-    # Apply a Wiener filter to remove white noise
-    filtered_data = wiener(audio_data)
-
-    # Scale the filtered data back to the original data range
-    filtered_data = np.int16(filtered_data / np.max(np.abs(filtered_data)) * 32767)
-
-    # Save the filtered audio as a new WAV file
-    wavfile.write(out_wav, sample_rate, filtered_data)
-
-
-def clear_audio_librosa(in_wav, out_wav='output.wav'):
-    import librosa
-    import soundfile as sf
-
-    # Load the audio file
-    audio_data, sample_rate = librosa.load(in_wav, sr=None)
-
-    # Compute the magnitude spectrogram
-    spec = np.abs(librosa.stft(audio_data))
-
-    # Estimate the noise spectrum
-    noise_spec = np.median(spec, axis=1)
-
-    # Set the threshold for noise reduction
-    threshold = 1
-
-    # Perform spectral subtraction
-    filtered_spec = np.maximum(spec - threshold * noise_spec[:, np.newaxis], 0.0)
-
-    # Reconstruct the audio signal from the modified spectrogram
-    filtered_audio = librosa.istft(filtered_spec)
-
-    # Save the filtered audio as a new WAV file
-    sf.write(out_wav, filtered_audio, sample_rate)
+def convert_mp4_to_wav(mp4_path, wav_path):
+    video_clip = VideoFileClip(mp4_path)
+    audio_clip = video_clip.audio
+    audio_clip.write_audiofile(wav_path)
 
 if __name__ == '__main__':
-    # wav1 = "data/1_Story_B.wav"
-    #wav1 = "data/1_STORY_SUBJECT.wav"
-    # wav1 = "data/2_Emo_I.wav"
-    wav1 = "/media/faisal/RE_AS/REASEARCHASSISTANT/RECORDS/record2/2_STORY_BOTH.wav"
 
-    #clear_audio_librosa(wav1, out_wav='out_librosa3.wav')
+    # mp4_file = 'E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/1_TB_SUBJECT.mp4 '
+    # wav_file = 'E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/1_TB_SUBJECT.wav'
+    # convert_mp4_to_wav(mp4_file, wav_file)
+    wav1 = "data/1_STORY_SUBJECT.wav"
+    print("diarizing: " + wav1)
 
     diarization_smooth, diarization = diarization_w_smoothing(wav1)
     
@@ -161,3 +149,7 @@ if __name__ == '__main__':
 
     list_speaker_times1 = visual.diarization_for_plot1(diarization_smooth)
     visual.plot_animation2(list_speaker_times1) #Animation with background audio, works with diarization_for_plot1
+
+    time_speaker = legal_diarization_smoothing(wav1)
+
+
