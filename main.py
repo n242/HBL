@@ -60,7 +60,7 @@ def legal_diarization_smoothing(my_wav):
             speakers[speaker]+=1
     if len(times)>3:   # check diarization is only for one speaker for the longer vids
         for key, val in speakers.items():
-            if val<2:
+            if val<3:
                 print(f"speaker {key} had only {val} occurences")
     for i in range(len(times)):
         print(times[i])
