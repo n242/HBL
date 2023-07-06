@@ -4,3 +4,4 @@ simple-diarizer.py
 .idea/
 output_wavs/
 __pycache__/
+**/__pycache__/
