@@ -51,15 +51,14 @@ def clear_audio_librosa(in_wav, out_wav='output.wav'):
     sf.write(out_wav, filtered_audio, sample_rate)
 
 
-
 def final_ica(my_wav):
-
     audio, sample_rate = sf.read(my_wav)
     ica = FastICA(n_components=10)
     audio_ica = ica.fit_transform(audio)
-    num_noise_components=10
+    num_noise_components = 10
     noise_indices = np.std(audio_ica, axis=0).argsort()[:num_noise_components]
     noise = np.dot(audio_ica[:, noise_indices], ica.components_[noise_indices, :])
     clean_audio = audio - noise
     sf.write('output_wavs/clean_ica.wav', clean_audio, sample_rate)
+
 

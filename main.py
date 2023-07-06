@@ -25,13 +25,14 @@ def pyannote_diarization(my_wav):
     # find which speaker the coordinates of y62-y66 or x somehow are changed in that time
     # for the whole range of sampling, the speaker is the one which has the larger movement
 
+
 def diarization_w_smoothing(my_wav):
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
                                         use_auth_token="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")
     diarization = pipeline(my_wav)
     times = []
     for turn, _, speaker in diarization.itertracks(yield_label=True):
-        #print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
+        # print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
         if len(times) >= 1 and times[-1][2] == speaker and abs(turn.start - times[-1][1]) < 1:
             # print(f"concatenated at{turn.end}")
             times[-1] = ((times[-1][0], round(turn.end, 1), speaker))
@@ -41,28 +42,28 @@ def diarization_w_smoothing(my_wav):
         print(times[i])
     return times, diarization
 
+
 def legal_diarization_smoothing(my_wav):
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
                                         use_auth_token="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")
     diarization = pipeline(my_wav)
     times = []
-    #TODO: add dictionary of speakers count how many times it detects each speaker
-    speakers={"SPEAKER_00":0, "SPEAKER_01":0}
+    speakers = {"SPEAKER_00": 0, "SPEAKER_01": 0}
     for turn, _, speaker in diarization.itertracks(yield_label=True):
-        if str(speaker)=="SPEAKER_02":
-            print("detected 3 speakers, bad diarization")
-        #print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
+        if str(speaker) == "SPEAKER_02":
+            print("BAD DIARIZATION: detected 3 speakers")
+        # print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
         if len(times) >= 1 and times[-1][2] == speaker and abs(turn.start - times[-1][1]) < 1:
-            # print(f"concatenated at{turn.end}")
+            #applied smoothing, connecting to prev segment
             times[-1] = ((times[-1][0], round(turn.end, 1), speaker))
             speakers[speaker] += 1
         else:
             times.append((round(turn.start, 1), round(turn.end, 1), speaker))
-            speakers[speaker]+=1
-    if len(times)>3:   # check diarization is only for one speaker for the longer vids
+            speakers[speaker] += 1
+    if len(times) > 3:  # check diarization is only for one speaker for the longer vids
         for key, val in speakers.items():
-            if val<3:
-                print(f"speaker {key} had only {val} occurences")
+            if val < 3:
+                print(f"BAD DIARIZATION: speaker {key} had only {val} occurences")
     for i in range(len(times)):
         print(times[i])
     return times, diarization
@@ -129,27 +130,41 @@ def convert_mp4_to_wav(mp4_path, wav_path):
     audio_clip = video_clip.audio
     audio_clip.write_audiofile(wav_path)
 
-if __name__ == '__main__':
 
+def pyannote_diarization_csv(times, output):
+    start_times = list(zip(*times))[0]
+    stop_times = list(zip(*times))[1]
+    speakers = list(zip(*times))[2]
+
+    # Create a DataFrame from the arrays
+    data = {'start': start_times, 'stop': stop_times, 'speaker': speakers}
+    df = pd.DataFrame(data)
+
+    # Save the DataFrame to Excel
+    filename = output+'.xlsx'
+    df.to_excel(filename, index=False)
+
+    print(f"Excel file '{filename}' created successfully.")
+
+
+if __name__ == '__main__':
     # mp4_file = 'E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/1_TB_SUBJECT.mp4 '
     # wav_file = 'E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/1_TB_SUBJECT.wav'
     # convert_mp4_to_wav(mp4_file, wav_file)
-    wav1 = "data/1_STORY_SUBJECT.wav"
+
+
+    file_name = "11_TB_Subject_1"
+    wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/11_TB_Subject_1.wav"
     print("diarizing: " + wav1)
 
-    diarization_smooth, diarization = diarization_w_smoothing(wav1)
-    
-    # sampling_rate, data = read_wav(wav1)
+    diarization_smooth, raw_diarization = legal_diarization_smoothing(wav1)
+    pyannote_diarization_csv(diarization_smooth, 'visual_outputs/'+file_name)
+
     data, sampling_rate = sf.read(wav1)
     visual = visualization.Vizualization(wav1, sampling_rate, data)
 
     list_speaker_times0 = visual.diarization_for_plot(diarization_smooth)
-    # visual.plot_animation(list_speaker_times0)
-    # visual.plot_diarization(list_speaker_times0)
-
+    visual.plot_diarization(list_speaker_times0, 'results/'+file_name)
     list_speaker_times1 = visual.diarization_for_plot1(diarization_smooth)
-    visual.plot_animation2(list_speaker_times1) #Animation with background audio, works with diarization_for_plot1
-
-    time_speaker = legal_diarization_smoothing(wav1)
-
+    visual.plot_animation2( 'visual_outputs/'+file_name, list_speaker_times1) #Animation with background audio, works with diarization_for_plot1
 
