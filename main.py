@@ -131,7 +131,7 @@ def convert_mp4_to_wav(mp4_path, wav_path):
     audio_clip.write_audiofile(wav_path)
 
 
-def pyannote_diarization_csv(times, output):
+def pyannote_diarization_csv(times, path):
     start_times = list(zip(*times))[0]
     stop_times = list(zip(*times))[1]
     speakers = list(zip(*times))[2]
@@ -141,7 +141,7 @@ def pyannote_diarization_csv(times, output):
     df = pd.DataFrame(data)
 
     # Save the DataFrame to Excel
-    filename = output+'.xlsx'
+    filename = path+'.xlsx'
     df.to_excel(filename, index=False)
 
     print(f"Excel file '{filename}' created successfully.")
@@ -158,13 +158,13 @@ if __name__ == '__main__':
     print("diarizing: " + wav1)
 
     diarization_smooth, raw_diarization = legal_diarization_smoothing(wav1)
-    pyannote_diarization_csv(diarization_smooth, 'visual_outputs/'+file_name)
+    pyannote_diarization_csv(diarization_smooth, path='results/'+file_name)
 
     data, sampling_rate = sf.read(wav1)
     visual = visualization.Vizualization(wav1, sampling_rate, data)
 
-    list_speaker_times0 = visual.diarization_for_plot(diarization_smooth)
-    visual.plot_diarization(list_speaker_times0, 'results/'+file_name)
-    list_speaker_times1 = visual.diarization_for_plot1(diarization_smooth)
-    visual.plot_animation2( 'visual_outputs/'+file_name, list_speaker_times1) #Animation with background audio, works with diarization_for_plot1
+    list_speaker_times = visual.diarization_for_plot1(diarization_smooth)
+    visual.plot_diarization(list_speaker_times, path='visual_outputs/'+file_name)
+    #list_speaker_times1 = visual.diarization_for_plot1(diarization_smooth)
+    visual.plot_animation2(list_speaker_times, path='visual_outputs/'+file_name) #Animation with background audio, works with diarization_for_plot1
 

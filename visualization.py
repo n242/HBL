@@ -68,11 +68,6 @@ class Vizualization:
                     final_list.append(-1)
         return final_list
 
-    """
-    I get the following error:  in diarization_for_plot
-    if gen_diarization[j][0] < times[i] < gen_diarization[j][1]:
-IndexError: list index out of range
-    """
 
     def plot_diarization(self, final_list, path):
         times = np.arange(0, len(final_list), 1)  # arr from 0 to end of audio
@@ -81,12 +76,14 @@ IndexError: list index out of range
         fig.suptitle('Speaker Diarization')
         colors = ['black', 'red', 'blue']
         levels = [0, 1, 2]
-        blue_line = mlines.Line2D([], [], color='blue', marker='.', markersize=15, label='Marissa')
+        black_line = mlines.Line2D([], [], color='black', marker='.', markersize=15, label='No Speaker')
         red_line = mlines.Line2D([], [], color='red', marker='.', markersize=15, label='Interviewee')
-        ax.legend(fontsize='small', title='Speakers:', handles=[blue_line, red_line])
+        blue_line = mlines.Line2D([], [], color='blue', marker='.', markersize=15, label='Marissa')
+
+        ax.legend(fontsize='small', title='Speakers:', handles=[black_line, red_line, blue_line])
 
         cmap, norm = mlpColors.from_levels_and_colors(levels=levels, colors=colors, extend='max')
-        timeDiffInt = np.where(np.array(final_list) == 0, 1, 2)
+        timeDiffInt = np.where(np.array(final_list) == -1, 0, 1)
         ax.scatter(times, final_list, c=timeDiffInt, s=150, marker='.', edgecolor='none', cmap=cmap, norm=norm,
                    label=("No Speaker", "Marissa", "Interviewee"))  #
         plt.xlabel('time(s)')
@@ -129,7 +126,7 @@ IndexError: list index out of range
     #
     #     ani.save(path+'animation.gif',writer='pillow', fps=30)
 
-    def plot_animation2(self, path, final_list):
+    def plot_animation2(self, final_list, path):
         # Load the audio
         audio = self.audio
         audio_duration = len(audio) / self.SAMPLE_RATE
@@ -142,9 +139,12 @@ IndexError: list index out of range
         ax.set_xlim([0, repeat_length])
         ax.set_ylim([-1.1, 1.1])
         im, = ax.plot([], [])
-        ax.set_title("Figure Title")
+        ax.set_title("Speaker Diarization")
         ax.set_xlabel("time(s)")
         ax.set_ylabel("speaker")
+
+
+
 
         # Define the animation update function
         def update_animation(frame):
@@ -173,7 +173,7 @@ IndexError: list index out of range
         # Play the audio in the background
         #sd.play(audio, self.SAMPLE_RATE, blocking=False)
 
-        self.play_wav(audio, blocking=False)
+        self.play_wav(audio)
 
         # Display the animation
         plt.show()
