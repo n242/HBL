@@ -5,3 +5,5 @@ simple-diarizer.py
 output_wavs/
 __pycache__/
 **/__pycache__/
+visual_outputs/
+results/
