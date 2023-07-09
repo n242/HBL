@@ -5,6 +5,9 @@ from moviepy.editor import VideoFileClip
 import visualization
 import soundfile as sf
 import noise_clean
+from scipy.io import wavfile
+import os
+from help_func import *
 
 
 class Diarization:
@@ -122,12 +125,6 @@ class Diarization:
         out1 = self.run_s_i(csv1, wav1)
         self.compare_outputs(out1, out2)
 
-    def convert_mp4_to_wav(self, mp4_path, wav_path):
-        video_clip = VideoFileClip(mp4_path)
-        audio_clip = video_clip.audio
-        audio_clip.write_audiofile(wav_path)
-        self.wav = audio_clip
-
     def pyannote_diarization_csv(self, times, path):
         start_times = list(zip(*times))[0]
         stop_times = list(zip(*times))[1]
@@ -138,29 +135,59 @@ class Diarization:
         df = pd.DataFrame(data)
 
         # Save the DataFrame to Excel
-        filename = path + '.xlsx'
-        df.to_excel(filename, index=False)
+        filename = path + '.csv'
+        df.to_csv(filename, index=False)
 
-        print(f"Excel file '{filename}' created successfully.")
+        print(f"CSV file '{filename}' created successfully.")
+
+    def pyannote_diarization_xlsx(self, times, path):
+        start_times = list(zip(*times))[0]
+        stop_times = list(zip(*times))[1]
+        speakers = list(zip(*times))[2]
+
+
+def main_linux():
+    # with faisal links
+    path = "/media/faisal/RE_AS/REASEARCHASSISTANT/RECORDS/record235/Done235/235_Emotions_both.mp4"
+    file_name = os.path.splitext(os.path.basename(path))[0]
+    flag = False
+    if (get_file_format(path) == 'MP4'):
+        new_file_path = os.path.splitext(path)[0] + "." + "wav"
+        convert_mp4_to_wav(path, new_file_path)
+        path = new_file_path
+        flag = True
+    elif (get_file_format(path) == 'Unknown'):
+        raise Exception("ERROR WRONG FILE TYPE")
+
+    print("diarizing: " + path)
+
+    data, sampling_rate = sf.read(path)
+
+    samplerate, data_arr = wavfile.read(path)
+    channel = data_arr[:, 0]  # Extract left channel
+    visual = visualization.Vizualization(wav1, sampling_rate, data, channel)
+    diarization = Diarization(path)
+    diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
+    if flag:
+        os.remove(path)
+    new_diarization = diarization_get_spaker(diarization_smooth)
+    diarization.pyannote_diarization_csv(new_diarization, path='results/' + file_name)
+
+    list_speaker_times = visual.diarization_for_plot1(diarization_smooth)
+    visual.plot_diarization(list_speaker_times, path='visual_outputs/' + file_name)
+    visual.plot_animation2(list_speaker_times,
+                           path='visual_outputs/' + file_name)  # Animation with background audio, works with diarization_for_plot1
 
 
 if __name__ == '__main__':
-    # mp4_file = 'E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/1_TB_SUBJECT.mp4 '
-    # wav_file = 'E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/1_TB_SUBJECT.wav'
-    # convert_mp4_to_wav(mp4_file, wav_file)
-
-
     file_name = "11_TB_Subject_1"
     wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/11_TB_Subject_1.wav"
-    print("diarizing: " + wav1)
-
-
     data, sampling_rate = sf.read(wav1)
-    from scipy.io import wavfile
 
     samplerate, data_arr = wavfile.read(wav1)
     channel = data_arr[:, 0]  # Extract left channel
 
+    print("diarizing: " + wav1)
     visual = visualization.Vizualization(wav1, sampling_rate, data, channel)
 
     # diarization = Diarization(wav1)
@@ -173,4 +200,4 @@ if __name__ == '__main__':
     # visual.plot_animation2(list_speaker_times,
     #                        path='visual_outputs/' + file_name)  # Animation with background audio, works with diarization_for_plot1
 
-    visual.create_vid_from_gif('visual_outputs/'+file_name+'animation2.gif', "visual_outputs/"+file_name+".mp4")
+    visual.create_vid_from_gif('visual_outputs/' + file_name + 'animation2.gif', "visual_outputs/" + file_name + ".mp4")
