@@ -149,6 +149,7 @@ if __name__ == '__main__':
     # wav_file = 'E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/1_TB_SUBJECT.wav'
     # convert_mp4_to_wav(mp4_file, wav_file)
 
+
     file_name = "11_TB_Subject_1"
     wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/11_TB_Subject_1.wav"
     print("diarizing: " + wav1)
@@ -162,14 +163,14 @@ if __name__ == '__main__':
 
     visual = visualization.Vizualization(wav1, sampling_rate, data, channel)
 
+    # diarization = Diarization(wav1)
+    # diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
+    # # pyannote_diarization_csv(diarization_smooth, path='results/'+file_name)
+    #
+    #
+    # list_speaker_times = visual.diarization_for_plot1(diarization_smooth)
+    # visual.plot_diarization(list_speaker_times, path='visual_outputs/' + file_name)
+    # visual.plot_animation2(list_speaker_times,
+    #                        path='visual_outputs/' + file_name)  # Animation with background audio, works with diarization_for_plot1
 
-    diarization = Diarization(wav1)
-    diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
-    # pyannote_diarization_csv(diarization_smooth, path='results/'+file_name)
-
-
-
-    list_speaker_times = visual.diarization_for_plot1(diarization_smooth)
-    visual.plot_diarization(list_speaker_times, path='visual_outputs/' + file_name)
-    visual.plot_animation2(list_speaker_times,
-                           path='visual_outputs/' + file_name)  # Animation with background audio, works with diarization_for_plot1
+    visual.create_vid_from_gif('visual_outputs/'+file_name+'animation2.gif', "visual_outputs/"+file_name+".mp4")
