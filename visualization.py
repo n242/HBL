@@ -9,7 +9,6 @@ import sounddevice as sd
 import matplotlib.lines as mlines
 from matplotlib import colors as mlpColors
 
-
 _default_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
 
@@ -21,7 +20,7 @@ class Vizualization:
         self.times_list = []
         self.data_arr = data_arr
 
-    def play_wav(self,  blocking=True):
+    def play_wav(self, blocking=True):
         try:
             # Small bug with sounddevice.play: the audio is cut 0.5 second too early. so we pad it
             # Convert self.wav to a NumPy array
@@ -30,7 +29,7 @@ class Vizualization:
 
             # Concatenate zeros to the waveform
             zeros = np.zeros(self.SAMPLE_RATE // 2, dtype=np.int16)
-            data= np.concatenate((data, zeros))
+            data = np.concatenate((data, zeros))
 
             # Play the audio using sd.play()
             sd.play(data, self.SAMPLE_RATE, blocking=blocking)
@@ -38,33 +37,11 @@ class Vizualization:
         except Exception as e:
             print("Failed to play audio: %s" % repr(e))
 
-    # def diarization_for_plot(self, gen_diarization):
-    #     final_list = []
-    #     max_diar = len(gen_diarization)
-    #     times = np.arange(0, gen_diarization[-1][1], 1)  # arr from 0 to end of audio
-    #     #print(times)
-    #     j = 0
-    #     for i in range(len(times)):
-    #         if j < max_diar:
-    #             if gen_diarization[j][0] < times[i] < gen_diarization[j][1]:
-    #                 if gen_diarization[j][2] == "SPEAKER_00":
-    #                     final_list.append(0)
-    #                 else:
-    #                     final_list.append(1)
-    #             # elif times[i] > gen_diarization[j][1] and j + 1 < max_diar and times[i] < gen_diarization[j+1][0]:
-    #             #     final_list.append(0)
-    #             elif times[i]<gen_diarization[j][0]:  # no speaker
-    #                 j += 0
-    #             else:  # no speaker
-    #                 j += 1
-    #     self.times_list = final_list
-    #     return final_list
-
     def diarization_for_plot1(self, gen_diarization):
         final_list = []
         max_diar = len(gen_diarization)
         times = np.arange(0, gen_diarization[-1][1], 1)  # arr from 0 to end of audio
-        #print(times.shape)
+        # print(times.shape)
         j = 0
         for i in range(len(times)):
             if j < max_diar:
@@ -74,78 +51,52 @@ class Vizualization:
                     else:
                         final_list.append(2)
 
-                elif times[i]>gen_diarization[j][1]: # no speaker
+                elif times[i] > gen_diarization[j][1]:  # no speaker
                     final_list.append(0)
                     j += 1
                 else:
                     final_list.append(0)
         return final_list
 
-
     def plot_diarization(self, final_list, path):
+
         times = np.arange(0, len(final_list), 1)  # arr from 0 to end of audio
 
         fig, ax = plt.subplots(figsize=(10, 5))
         fig.suptitle('Speaker Diarization')
-        colors = ['black', 'red', 'blue']
-        T = TypeVar('T', int, float)  # Create a generic type variable
-        levels: Iterable[T] = [0,1,2]  # Use the generic type variable T
+
+        color_dict = {
+            0: ('black', 'No Speaker'),
+            1: ('red', 'Interviewee'),
+            2: ('blue', 'Marissa')
+        }
+
+        colors = [color_dict[val][0] for val in final_list]
+        labels = [color_dict[val][1] for val in final_list]
+
         black_line = mlines.Line2D([], [], color='black', marker='.', markersize=15, label='No Speaker')
         red_line = mlines.Line2D([], [], color='red', marker='.', markersize=15, label='Interviewee')
         blue_line = mlines.Line2D([], [], color='blue', marker='.', markersize=15, label='Marissa')
 
         ax.legend(fontsize='small', title='Speakers:', handles=[black_line, red_line, blue_line])
 
-        cmap, norm = mlpColors.from_levels_and_colors(levels=levels, colors=colors, extend='max')
-        timeDiffInt = np.where(np.array(final_list) ==  0, 1,2)
-        ax.scatter(times, final_list, c=timeDiffInt, s=150, marker='.', edgecolor='none', cmap=cmap, norm=norm,
-                   label=("No Speaker", "Marissa", "Interviewee"))  #
+        T = TypeVar('T', int, float)  # Create a generic type variable
+        levels: Iterable[T] = [0, 1, 2]  # Use the generic type variable T
+        cmap, norm = mlpColors.from_levels_and_colors(levels=levels, colors=['black', 'red', 'blue'], extend='max')
+
+        ax.scatter(times, final_list, c=colors, s=150, marker='.', edgecolor='none', cmap=cmap, norm=norm, label=labels)
+
         plt.xlabel('time(s)')
         plt.grid()
         plt.savefig(path + 'diarization.png')
         plt.show()
-
         return
-
-
-
-    # def plot_animation(self, final_list, path):
-    #     #data generator
-    #     data = np.random.random((100,))
-    #
-    #     #setup figure
-    #     fig = plt.figure(figsize=(5,4))
-    #     ax = fig.add_subplot(1,1,1)
-    #
-    #     #rolling window size
-    #     repeat_length = 25
-    #
-    #     ax.set_xlim([0,repeat_length])
-    #     ax.set_ylim([-2,2])
-    #
-    #
-    #     #set figure to be modified
-    #     im, = ax.plot([], [])
-    #
-    #     def func(n):
-    #         im.set_xdata(np.arange(n)) # time in secs
-    #         im.set_ydata(final_list[0:n])
-    #         if n>repeat_length:
-    #             lim = ax.set_xlim(n-repeat_length, n)
-    #         else:
-    #             lim = ax.set_xlim(0,repeat_length)
-    #         return im
-    #
-    #     ani = animation.FuncAnimation(fig, func, frames=data.shape[0], interval=30, blit=False)
-    #
-    #     plt.show()
-    #
-    #     ani.save(path+'animation.gif',writer='pillow', fps=30)
 
     def plot_animation2(self, final_list, path):
         # Load the audio
+        import moviepy.editor as mpy
         audio = self.audio
-        audio_duration = len(audio) / self.SAMPLE_RATE
+        audio_duration = len(audio)  # / self.SAMPLE_RATE
 
         # Setup figure and animation parameters
         fig = plt.figure(figsize=(6, 4))
@@ -160,8 +111,11 @@ class Vizualization:
         ax.set_ylabel("speaker")
 
         # Define the animation update function
+        frames = []
+
         def update_animation(frame):
             # Calculate the time in seconds for the current frame
+            frames.append(frame)
             time = frame / audio_duration
 
             # Set the animation data
@@ -174,25 +128,20 @@ class Vizualization:
             else:
                 lim = ax.set_xlim(0, repeat_length)
 
-                # Add labels on the top corner
-            # ax.text(0.95, 0.95, "No speaker = -1", transform=ax.transAxes, horizontalalignment='right', verticalalignment='top')
-            # ax.text(0.95, 0.90, "Speaker 1 = 0", transform=ax.transAxes, horizontalalignment='right', verticalalignment='top')
-            # ax.text(0.95, 0.85, "Speaker 2 = 1", transform=ax.transAxes, horizontalalignment='right', verticalalignment='top')
+            # Add labels on the top corner
             ax.legend(fontsize='small', title='Speakers:',
                       labels=["No Speaker = 0\nSpeaker 1 = 1\nSpeaker 2 = 2"])
-
-
             return im
 
         # Calculate the frame duration in milliseconds
-        frame_duration = 2000
+        frame_duration = 1000
 
-        # Create the animation
-        ani = animation.FuncAnimation(fig, update_animation, frames=int(len(audio)/self.SAMPLE_RATE), interval=frame_duration, blit=False)
-
+        # Create the animations
+        ani = animation.FuncAnimation(fig, update_animation, frames=int(len(audio)), interval=frame_duration,
+                                      blit=False)
 
         # Play the audio in the background
-        #sd.play(audio, self.SAMPLE_RATE, blocking=False)
+        # sd.play(audio, self.SAMPLE_RATE, blocking=False)
 
         self.play_wav(audio)
 
@@ -200,5 +149,13 @@ class Vizualization:
         plt.show()
 
         # Save the animation as a GIF
-        ani.save(path+'animation2.gif', writer='pillow', fps=30)
+        ani.save(path + 'animation2.gif', writer='pillow')
 
+    def create_vid_from_gif(self, gif_path, out_path):
+        import moviepy.editor as mp
+
+        clip = mp.VideoFileClip(gif_path)
+        # vid = clip.write_videofile("myvideo.mp4")
+        video = clip.set_audio(mp.AudioFileClip(self.wav))
+        # fps = 30
+        video.write_videofile(out_path)
