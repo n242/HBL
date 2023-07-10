@@ -8,6 +8,7 @@ import noise_clean
 from scipy.io import wavfile
 import os
 from help_func import *
+from tqdm import tqdm
 
 class Diarization:
     def __init__(self, wav):
@@ -68,8 +69,8 @@ class Diarization:
             for key, val in speakers.items():
                 if val < 3:
                     print(f"BAD DIARIZATION: speaker {key} had only {val} occurences")
-        for i in range(len(times)):
-            print(times[i])
+        # for i in range(len(times)):
+            # print(times[i])
         return times, diarization
 
     def excel_diarization(self, times, excel_path):
@@ -155,7 +156,8 @@ class Diarization:
         print(f"Excel file '{filename}' created successfully.")
 
 if __name__ == '__main__':
-    path = "/media/faisal/RE_AS/REASEARCHASSISTANT/RECORDS/record235/Done235/235_Emotions_both.mp4"
+    # create_data_for_rest()
+    path = "/home/faisal/Desktop/interview_example1.wav"
     file_name = os.path.splitext(os.path.basename(path))[0]
     flag = False
     if(get_file_format(path) == 'MP4'):
@@ -171,7 +173,7 @@ if __name__ == '__main__':
     data, sampling_rate = sf.read(path)
 
     samplerate, data_arr = wavfile.read(path)
-    channel = data_arr[:, 0]  # Extract left channel
+    channel = data_arr  # Extract left channel
 
     visual = visualization.Vizualization(path, sampling_rate, data, channel)
 
@@ -180,8 +182,8 @@ if __name__ == '__main__':
     if flag:
         os.remove(path)
     new_diarization = diarization_get_spaker(diarization_smooth)
-    diarization.pyannote_diarization_csv(new_diarization, path='results/'+file_name)
+    diarization.pyannote_diarization_csv(new_diarization, path='/home/faisal/Desktop/'+file_name)
 
-    list_speaker_times = visual.diarization_for_plot1(diarization_smooth)
-    visual.plot_diarization(list_speaker_times, path='visual_outputs/' + file_name)
-    visual.plot_animation2(list_speaker_times, path='visual_outputs/' + file_name)  # Animation with background audio, works with diarization_for_plot1
+    list_speaker_times = visual.diarization_for_plot1(new_diarization)
+    visual.plot_diarization(list_speaker_times, path='/home/faisal/Desktop/' + file_name)
+    visual.plot_animation2(list_speaker_times, '/home/faisal/Desktop/' + file_name, path)  # Animation with background audio, works with diarization_for_plot1
