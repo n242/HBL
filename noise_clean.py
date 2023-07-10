@@ -4,6 +4,10 @@ from sklearn.decomposition import FastICA
 from scipy.io import wavfile
 from scipy.signal import wiener
 
+from pydub import AudioSegment
+import noisereduce as nr
+
+
 MAX_INT = 32767.0
 
 
@@ -59,5 +63,30 @@ def final_ica(my_wav):
     noise = np.dot(audio_ica[:, noise_indices], ica.components_[noise_indices, :])
     clean_audio = audio - noise
     sf.write('output_wavs/clean_ica.wav', clean_audio, sample_rate)
+
+
+def clean_audio(input_path):
+    # Load the audio file
+    audio = AudioSegment.from_wav(input_path)
+
+    # Convert to numpy array for noise reduction
+    audio_array = np.array(audio.get_array_of_samples())
+
+    # Perform noise reduction
+    reduced_noise = nr.reduce_noise(y=audio_array, sr=audio.frame_rate)
+
+    # Create a new AudioSegment object from the cleaned audio
+    cleaned_audio = AudioSegment(
+        reduced_noise.tobytes(),
+        frame_rate=audio.frame_rate,
+        sample_width=reduced_noise.dtype.itemsize,
+        channels=audio.channels
+    )
+
+    # Export the cleaned audio to a new file
+    output_path = input_path[:-4] + "_edited.wav"
+    cleaned_audio.export(output_path, format="wav")
+
+    print("Audio cleaned and saved as:", output_path)
 
 

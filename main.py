@@ -204,7 +204,10 @@ def main_visualization(wav1, diarization_smooth, file_name):
     visual.create_vid_from_gif('visual_outputs/' + file_name + 'animation2.gif', "visual_outputs/" + file_name + ".mp4")
 
 if __name__ == '__main__':
-    wav1 ="data/to_classify/33_story_Both_1.wav"
+    path = "data/to_classify/14_Emotions_SUBJECT2_1.wav"
+    noise_clean.clean_audio(path)
+
+    wav1 ="data/to_classify/14_Emotions_SUBJECT2_1_edited.wav"
     diarization_smooth, file_name = main_diarizaion(wav1)
 
     #if wanting to see visual results run:
