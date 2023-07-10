@@ -10,6 +10,7 @@ import os
 from help_func import *
 from tqdm import tqdm
 
+
 class Diarization:
     def __init__(self, wav):
         self.wav = wav
@@ -145,38 +146,27 @@ class Diarization:
         stop_times = list(zip(*times))[1]
         speakers = list(zip(*times))[2]
 
-        # Create a DataFrame from the arrays
-        data = {'start': start_times, 'stop': stop_times, 'speaker': speakers}
-        df = pd.DataFrame(data)
 
-        # Save the DataFrame to Excel
-        filename = path + '.xlsx'
-        df.to_excel(filename, index=False)
-
-        print(f"Excel file '{filename}' created successfully.")
-
-if __name__ == '__main__':
-    # create_data_for_rest()
-    path = "/home/faisal/Desktop/interview_example1.wav"
+def main_linux():
+    # with faisal links
+    path = "/media/faisal/RE_AS/REASEARCHASSISTANT/RECORDS/record235/Done235/235_Emotions_both.mp4"
     file_name = os.path.splitext(os.path.basename(path))[0]
     flag = False
-    if(get_file_format(path) == 'MP4'):
+    if (get_file_format(path) == 'MP4'):
         new_file_path = os.path.splitext(path)[0] + "." + "wav"
         convert_mp4_to_wav(path, new_file_path)
         path = new_file_path
         flag = True
-    elif(get_file_format(path) == 'Unknown'):
+    elif (get_file_format(path) == 'Unknown'):
         raise Exception("ERROR WRONG FILE TYPE")
-    
+
     print("diarizing: " + path)
 
     data, sampling_rate = sf.read(path)
 
     samplerate, data_arr = wavfile.read(path)
-    channel = data_arr  # Extract left channel
-
-    visual = visualization.Vizualization(path, sampling_rate, data, channel)
-
+    channel = data_arr[:, 0]  # Extract left channel
+    visual = visualization.Vizualization(wav1, sampling_rate, data, channel)
     diarization = Diarization(path)
     diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
     if flag:
