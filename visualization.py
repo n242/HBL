@@ -144,4 +144,3 @@ class Vizualization:
         video = clip.set_audio(mp.AudioFileClip(out_audio))
         video.write_videofile(out_path)
 
-

@@ -1,9 +1,7 @@
 data/
-pretrained_models/
-simple-diarizer.py
-.idea/
+DiarizationResults/
+Example_Interview/
 output_wavs/
-__pycache__/
-**/__pycache__/
 visual_outputs/
-results/
+__pycache__/
+.idea/
