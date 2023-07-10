@@ -1,0 +1,7 @@
+data/
+DiarizationResults/
+Example_Interview/
+output_wavs/
+visual_outputs/
+__pycache__/
+.idea/

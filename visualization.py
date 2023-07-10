@@ -1,43 +1,26 @@
 from sys import stderr
 from time import sleep, perf_counter as timer
 from typing import Iterable, TypeVar
+
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as animation
-import sounddevice as sd
 import matplotlib.lines as mlines
 from matplotlib import colors as mlpColors
-import matplotlib
-from help_func import *
-matplotlib.use('agg')
+
+from pydub import AudioSegment
+from pydub.playback import play
+import moviepy.editor as mp
 
 _default_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
 
 class Vizualization:
-    def __init__(self, wav, sampling_rate, data, data_arr):
+    def __init__(self, wav, sampling_rate, data):
         self.SAMPLE_RATE = sampling_rate
         self.wav = wav
         self.audio = data
         self.times_list = []
-        self.data_arr = data_arr
-
-    def play_wav(self, blocking=True):
-        try:
-            # Small bug with sounddevice.play: the audio is cut 0.5 second too early. so we pad it
-            # Convert self.wav to a NumPy array
-
-            data = self.data_arr.astype(np.int16)
-
-            # Concatenate zeros to the waveform
-            zeros = np.zeros(self.SAMPLE_RATE // 2, dtype=np.int16)
-            data = np.concatenate((data, zeros))
-
-            # Play the audio using sd.play()
-            sd.play(data, self.SAMPLE_RATE, blocking=blocking)
-
-        except Exception as e:
-            print("Failed to play audio: %s" % repr(e))
 
     def diarization_for_plot1(self, gen_diarization):
         final_list = []
@@ -48,7 +31,7 @@ class Vizualization:
         for i in range(len(times)):
             if j < max_diar:
                 if gen_diarization[j][0] < times[i] < gen_diarization[j][1]:
-                    if gen_diarization[j][2] == "I":
+                    if gen_diarization[j][2] == "SPEAKER_00":
                         final_list.append(1)
                     else:
                         final_list.append(2)
@@ -66,25 +49,35 @@ class Vizualization:
 
         fig, ax = plt.subplots(figsize=(10, 5))
         fig.suptitle('Speaker Diarization')
-        colors = ['black', 'red', 'blue']
-        T = TypeVar('T', int, float)  # Create a generic type variable
-        levels: Iterable[T] = [0, 1, 2]  # Use the generic type variable T
+
+        color_dict = {
+            0: ('black', 'No Speaker'),
+            1: ('red', 'Interviewee'),
+            2: ('blue', 'Marissa')
+        }
+
+        colors = [color_dict[val][0] for val in final_list]
+        labels = [color_dict[val][1] for val in final_list]
+
         black_line = mlines.Line2D([], [], color='black', marker='.', markersize=15, label='No Speaker')
         red_line = mlines.Line2D([], [], color='red', marker='.', markersize=15, label='Interviewee')
-        blue_line = mlines.Line2D([], [], color='blue', marker='.', markersize=15, label='Interviewer')
+        blue_line = mlines.Line2D([], [], color='blue', marker='.', markersize=15, label='Marissa')
 
         ax.legend(fontsize='small', title='Speakers:', handles=[black_line, red_line, blue_line])
 
-        cmap, norm = mlpColors.from_levels_and_colors(levels=levels, colors=colors, extend='max')
-        timeDiffInt = np.where(np.array(final_list) == 0, 0, np.where(np.array(final_list) == 1, 2, 1))
-        ax.scatter(times, final_list, c=timeDiffInt, s=150, marker='.', edgecolor='none', cmap=cmap, norm=norm,
-                label=("No Speaker", "Marissa", "Interviewee"))
+        T = TypeVar('T', int, float)  # Create a generic type variable
+        levels: Iterable[T] = [0, 1, 2]  # Use the generic type variable T
+        cmap, norm = mlpColors.from_levels_and_colors(levels=levels, colors=['black', 'red', 'blue'], extend='max')
+
+        ax.scatter(times, final_list, c=colors, s=150, marker='.', edgecolor='none', cmap=cmap, norm=norm, label=labels)
+
         plt.xlabel('time(s)')
         plt.grid()
-        plt.savefig(path + '_diarization.png')
+        plt.savefig(path + 'diarization.png')
         plt.show()
+        return
 
-    def plot_animation2(self, final_list, path, audio_path):
+    def plot_animation2(self, final_list, path):
         # Load the audio
         import moviepy.editor as mpy
         audio = self.audio
@@ -120,29 +113,34 @@ class Vizualization:
             else:
                 lim = ax.set_xlim(0, repeat_length)
 
+            # Add labels on the top corner
+            ax.legend(fontsize='small', title='Speakers:',
+                      labels=["No Speaker = 0\nSpeaker 1 = 1\nSpeaker 2 = 2"])
             return im
 
         # Calculate the frame duration in milliseconds
         frame_duration = 1000
 
-        # Create the animation
-        ani = animation.FuncAnimation(fig, update_animation, frames=int(len(audio)/self.SAMPLE_RATE), interval=frame_duration, blit=False)
+        # Create the animations
+        ani = animation.FuncAnimation(fig, update_animation, frames=int(len(audio)), interval=frame_duration,blit=False)
 
-        # Remove the legend
-        ax.legend().set_visible(False)
-
-        # Add labels on the top corner without the lines
-        ax.text(0.95, 0.95, "No Speaker = 0", transform=ax.transAxes, horizontalalignment='right', verticalalignment='top')
-        ax.text(0.95, 0.90, "Interviewer = 1", transform=ax.transAxes, horizontalalignment='right', verticalalignment='top')
-        ax.text(0.95, 0.85, "Interviewee= 2", transform=ax.transAxes, horizontalalignment='right', verticalalignment='top')
+        # self.play_wav(audio)
+        # plt.show() # Display the animation
 
         # Save the animation as a GIF
-        ani.save(path+'_animation2.gif', writer='pillow', fps=30)
+        ani.save(path + 'animation2.gif', writer='pillow')
 
-        # Save the animation as an MP4 file
-        ani.save(path + '_animation2.mp4', writer='ffmpeg', fps=1.0 / frame_duration * 1000)
+    def create_vid_from_gif(self, gif_path, out_path):
+        # create 2 sec of silence audio segment
+        one_sec_segment = AudioSegment.silent(duration=4000)  # duration in milliseconds
+        # read wav file to an audio segment
+        song = AudioSegment.from_wav(self.wav)
+        # Add above two audio segments
+        final_song = one_sec_segment + song
+        out_audio = "visual_outputs/audio_w_silence.wav"
+        final_song.export(out_audio, format="wav")# Either save modified audio
 
-        mp4_path = path + '_animation2.mp4'
-        audio_path = audio_path
+        clip = mp.VideoFileClip(gif_path)
+        video = clip.set_audio(mp.AudioFileClip(out_audio))
+        video.write_videofile(out_path)
 
-        add_audio_to_mp4(mp4_path, audio_path, mp4_path)
