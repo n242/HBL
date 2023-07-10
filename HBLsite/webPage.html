@@ -159,10 +159,56 @@
     <!-- Results -->
     <section id="results" class="title-block">
       <h2>Results</h2>
-      <p>
-        No Content yet.
-      </p>
+      <div class="results-container">
+        <div class="result-item">
+          <h3>Example Video</h3>
+          <video src="data/animation_example.mp4" controls></video>
+        </div>
+        <div class="result-item">
+          <h3>Diarization times</h3>
+          <div id="csv-table">
+            <table>
+              <tr>
+                <th>Start</th>
+                <th>Stop</th>
+                <th>Speaker</th>
+              </tr>
+              <tr>
+                <td>0.9</td>
+                <td>19.0</td>
+                <td>I</td>
+              </tr>
+              <tr>
+                <td>19.6</td>
+                <td>33.0</td>
+                <td>S</td>
+              </tr>
+              <tr>
+                <td>33.6</td>
+                <td>44.0</td>
+                <td>I</td>
+              </tr>
+              <tr>
+                <td>45.4</td>
+                <td>57.8</td>
+                <td>S</td>
+              </tr>
+              <tr>
+                <td>58.4</td>
+                <td>71.0</td>
+                <td>I</td>
+              </tr>
+            </table>
+          </div>
+          <p><a href="data/interview_example.csv" download>Download CSV</a></p>
+        </div>
+        <div class="result-item">
+          <h3>Diarization plot</h3>
+          <img src="data/interview_diarization_grid.png" alt="Result Image">
+        </div>
+      </div>
     </section>
+
 
     <!-- Future Improvements -->
     <section id="future-improvements" class="title-block">
