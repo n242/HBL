@@ -181,14 +181,22 @@ def faisal_diarization():
 
 
 def main_diarizaion(wav1):
-    # file_name = "11_TB_Subject_1"
-    # wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/11_TB_Subject_1.wav"
     file_name = os.path.splitext(os.path.basename(wav1))[0]
     print("diarizing: " + wav1)
+    flag = False
+    if (get_file_format(wav1) == 'MP4'):
+        new_file_path = os.path.splitext(wav1)[0] + "." + "wav"
+        convert_mp4_to_wav(wav1, new_file_path)
+        wav1 = new_file_path
+        flag = True
+    elif (get_file_format(wav1) == 'Unknown'):
+        raise Exception("ERROR WRONG FILE TYPE")
 
     diarization = Diarization(wav1)
     diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
     diarization.pyannote_diarization_csv(diarization_smooth, path='results/' + file_name)
+    if flag:
+        os.remove(path)
     return diarization_smooth, file_name
 
 
@@ -204,10 +212,10 @@ def main_visualization(wav1, diarization_smooth, file_name):
     visual.create_vid_from_gif('visual_outputs/' + file_name + 'animation2.gif', "visual_outputs/" + file_name + ".mp4")
 
 if __name__ == '__main__':
-    path = "data/to_classify/14_Emotions_SUBJECT2_1.wav"
+    path = "data/to_classify/40_Story_Marissa_1.wav"
     noise_clean.clean_audio(path)
 
-    wav1 ="data/to_classify/14_Emotions_SUBJECT2_1_edited.wav"
+    wav1 ="data/to_classify/40_Story_Marissa_1_edited.wav"
     diarization_smooth, file_name = main_diarizaion(wav1)
 
     #if wanting to see visual results run:
