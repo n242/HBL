@@ -5,37 +5,22 @@ from typing import Iterable, TypeVar
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.animation as animation
-import sounddevice as sd
 import matplotlib.lines as mlines
 from matplotlib import colors as mlpColors
+
+from pydub import AudioSegment
+from pydub.playback import play
+import moviepy.editor as mp
 
 _default_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
 
 
 class Vizualization:
-    def __init__(self, wav, sampling_rate, data, data_arr):
+    def __init__(self, wav, sampling_rate, data):
         self.SAMPLE_RATE = sampling_rate
         self.wav = wav
         self.audio = data
         self.times_list = []
-        self.data_arr = data_arr
-
-    def play_wav(self, blocking=True):
-        try:
-            # Small bug with sounddevice.play: the audio is cut 0.5 second too early. so we pad it
-            # Convert self.wav to a NumPy array
-
-            data = self.data_arr.astype(np.int16)
-
-            # Concatenate zeros to the waveform
-            zeros = np.zeros(self.SAMPLE_RATE // 2, dtype=np.int16)
-            data = np.concatenate((data, zeros))
-
-            # Play the audio using sd.play()
-            sd.play(data, self.SAMPLE_RATE, blocking=blocking)
-
-        except Exception as e:
-            print("Failed to play audio: %s" % repr(e))
 
     def diarization_for_plot1(self, gen_diarization):
         final_list = []
@@ -137,25 +122,26 @@ class Vizualization:
         frame_duration = 1000
 
         # Create the animations
-        ani = animation.FuncAnimation(fig, update_animation, frames=int(len(audio)), interval=frame_duration,
-                                      blit=False)
+        ani = animation.FuncAnimation(fig, update_animation, frames=int(len(audio)), interval=frame_duration,blit=False)
 
-        # Play the audio in the background
-        # sd.play(audio, self.SAMPLE_RATE, blocking=False)
-
-        self.play_wav(audio)
-
-        # Display the animation
-        plt.show()
+        # self.play_wav(audio)
+        # plt.show() # Display the animation
 
         # Save the animation as a GIF
         ani.save(path + 'animation2.gif', writer='pillow')
 
     def create_vid_from_gif(self, gif_path, out_path):
-        import moviepy.editor as mp
+        # create 2 sec of silence audio segment
+        one_sec_segment = AudioSegment.silent(duration=4000)  # duration in milliseconds
+        # read wav file to an audio segment
+        song = AudioSegment.from_wav(self.wav)
+        # Add above two audio segments
+        final_song = one_sec_segment + song
+        out_audio = "visual_outputs/audio_w_silence.wav"
+        final_song.export(out_audio, format="wav")# Either save modified audio
 
         clip = mp.VideoFileClip(gif_path)
-        # vid = clip.write_videofile("myvideo.mp4")
-        video = clip.set_audio(mp.AudioFileClip(self.wav))
-        # fps = 30
+        video = clip.set_audio(mp.AudioFileClip(out_audio))
         video.write_videofile(out_path)
+
+

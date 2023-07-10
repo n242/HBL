@@ -1,14 +1,13 @@
 import numpy as np
 import soundfile as sf
 from sklearn.decomposition import FastICA
+from scipy.io import wavfile
+from scipy.signal import wiener
 
 MAX_INT = 32767.0
 
 
 def clear_audio_wiener(in_wav, out_wav='output.wav'):
-    from scipy.io import wavfile
-    from scipy.signal import wiener
-
     # Load the audio file
     sample_rate, audio_data = wavfile.read(in_wav)
 

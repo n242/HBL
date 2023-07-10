@@ -1,19 +1,17 @@
 from pyannote.audio import Pipeline
-from scipy.io.wavfile import read as read_wav
 import pandas as pd
-from moviepy.editor import VideoFileClip
-import visualization
 import soundfile as sf
-import noise_clean
-from scipy.io import wavfile
 import os
-from help_func import *
 
+from help_func import *
+import noise_clean
+import visualization
 
 class Diarization:
     def __init__(self, wav):
         self.wav = wav
 
+    #basic diarization
     def pyannote_diarization(self):
         pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
                                             use_auth_token="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")
@@ -27,10 +25,6 @@ class Diarization:
             print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
             times.append((round(turn.start, 1), round(turn.end, 1), speaker))
         return times
-
-        # for row in excel, find time of dirarization
-        # find which speaker the coordinates of y62-y66 or x somehow are changed in that time
-        # for the whole range of sampling, the speaker is the one which has the larger movement
 
     def diarization_w_smoothing(self):
         pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
@@ -48,15 +42,15 @@ class Diarization:
             print(times[i])
         return times, diarization
 
+    # diarization with hysteresis + check it's valid diarization
     def legal_diarization_smoothing(self):
         pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
                                             use_auth_token="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")
         diarization = pipeline(self.wav)
         times = []
-        speakers = {"SPEAKER_00": 0, "SPEAKER_01": 0}
+        speakers = {"SPEAKER_00": 0, "SPEAKER_01": 0, "SPEAKER_02": 0}
+        error_msg = ""
         for turn, _, speaker in diarization.itertracks(yield_label=True):
-            if str(speaker) == "SPEAKER_02":
-                print("BAD DIARIZATION: detected 3 speakers")
             # print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
             if len(times) >= 1 and times[-1][2] == speaker and abs(turn.start - times[-1][1]) < 1:
                 # applied smoothing, connecting to prev segment
@@ -65,10 +59,17 @@ class Diarization:
             else:
                 times.append((round(turn.start, 1), round(turn.end, 1), speaker))
                 speakers[speaker] += 1
-        if len(times) > 3:  # check diarization is only for one speaker for the longer vids
+        # validity tests of diarization below
+        if speakers["SPEAKER_02"]!=0:
+            error_msg="BAD DIARIZATION: detected 3 speakers"
+        speakers.pop("SPEAKER_02")
+        if speakers["SPEAKER_01"]==0:
+            error_msg="BAD DIARIZATION: only 1 speaker detected"
+        elif len(times) > 3:  # check diarization is only for one speaker for the longer vids
             for key, val in speakers.items():
                 if val < 3:
-                    print(f"BAD DIARIZATION: speaker {key} had only {val} occurences")
+                    error_msg=f"BAD DIARIZATION: speaker {key} had only {val} occurences"
+        print(error_msg)
         for i in range(len(times)):
             print(times[i])
         return times, diarization
@@ -162,10 +163,7 @@ def main_linux():
     print("diarizing: " + path)
 
     data, sampling_rate = sf.read(path)
-
-    samplerate, data_arr = wavfile.read(path)
-    channel = data_arr[:, 0]  # Extract left channel
-    visual = visualization.Vizualization(wav1, sampling_rate, data, channel)
+    visual = visualization.Vizualization(wav1, sampling_rate, data)
     diarization = Diarization(path)
     diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
     if flag:
@@ -178,26 +176,36 @@ def main_linux():
     visual.plot_animation2(list_speaker_times,
                            path='visual_outputs/' + file_name)  # Animation with background audio, works with diarization_for_plot1
 
-
-if __name__ == '__main__':
-    file_name = "11_TB_Subject_1"
-    wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/11_TB_Subject_1.wav"
-    data, sampling_rate = sf.read(wav1)
-
-    samplerate, data_arr = wavfile.read(wav1)
-    channel = data_arr[:, 0]  # Extract left channel
-
+def main_diarizaion(wav1):
+    # file_name = "11_TB_Subject_1"
+    # wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/11_TB_Subject_1.wav"
+    file_name = os.path.splitext(os.path.basename(wav1))[0]
     print("diarizing: " + wav1)
-    visual = visualization.Vizualization(wav1, sampling_rate, data, channel)
 
-    # diarization = Diarization(wav1)
-    # diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
-    # # pyannote_diarization_csv(diarization_smooth, path='results/'+file_name)
-    #
-    #
-    # list_speaker_times = visual.diarization_for_plot1(diarization_smooth)
-    # visual.plot_diarization(list_speaker_times, path='visual_outputs/' + file_name)
-    # visual.plot_animation2(list_speaker_times,
-    #                        path='visual_outputs/' + file_name)  # Animation with background audio, works with diarization_for_plot1
+    diarization = Diarization(wav1)
+    diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
+    diarization.pyannote_diarization_csv(diarization_smooth, path='results/' + file_name)
+    return diarization_smooth, file_name
+
+
+def main_visualization(wav1, diarization_smooth, file_name):
+
+    data, sampling_rate = sf.read(wav1)
+    visual = visualization.Vizualization(wav1, sampling_rate, data)
+    list_speaker_times = visual.diarization_for_plot1(diarization_smooth)
+    visual.plot_diarization(list_speaker_times, path='visual_outputs/' + file_name)
+    visual.plot_animation2(list_speaker_times,
+                           path='visual_outputs/' + file_name)  # Animation with background audio, works with diarization_for_plot1
 
     visual.create_vid_from_gif('visual_outputs/' + file_name + 'animation2.gif', "visual_outputs/" + file_name + ".mp4")
+
+if __name__ == '__main__':
+    wav1 ="data/to_classify/14_Emotions_SUBJECT2_1.wav"
+    diarization_smooth, file_name = main_diarizaion(wav1)
+
+    #if wanting to see visual results run:
+    #main_visualization(wav1, diarization_smooth, file_name)
+
+
+
+
