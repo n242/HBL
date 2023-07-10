@@ -70,7 +70,7 @@ class Diarization:
             error_msg="BAD DIARIZATION: only 1 speaker detected"
         elif len(times) > 3:  # check diarization is only for one speaker for the longer vids
             for key, val in speakers.items():
-                if val < 3:
+                if val <= 3:
                     error_msg=f"BAD DIARIZATION: speaker {key} had only {val} occurences"
         print(error_msg)
         for i in range(len(times)):
@@ -168,11 +168,6 @@ def faisal_diarization():
     data, sampling_rate = sf.read(path)
     visual = visualization.Vizualization(wav1, sampling_rate, data)
 
-    samplerate, data_arr = wavfile.read(path)
-    channel = data_arr  # Extract left channel
-
-    visual = visualization.Vizualization(path, sampling_rate, data, channel)
-
     diarization = Diarization(path)
     diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
     if flag:
@@ -209,7 +204,7 @@ def main_visualization(wav1, diarization_smooth, file_name):
     visual.create_vid_from_gif('visual_outputs/' + file_name + 'animation2.gif', "visual_outputs/" + file_name + ".mp4")
 
 if __name__ == '__main__':
-    wav1 ="data/to_classify/14_Emotions_SUBJECT2_1.wav"
+    wav1 ="data/to_classify/33_story_Both_1.wav"
     diarization_smooth, file_name = main_diarizaion(wav1)
 
     #if wanting to see visual results run:
