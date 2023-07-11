@@ -1,0 +1,11 @@
+pandas
+pyannote.audio
+matplotlib
+numpy
+pydub
+typing
+moviepy
+noisereduce
+soundfile
+scikit-learn
+scipy
