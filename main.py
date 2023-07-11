@@ -19,16 +19,17 @@ class Diarization:
         pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
                                             use_auth_token="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")
 
-        # 4. apply pretrained pipeline
+        # apply pretrained pipeline
         diarization = pipeline(self.wav)
 
-        # 5. print the result and save to arr
+        # print the result and save to arr
         times = []
         for turn, _, speaker in diarization.itertracks(yield_label=True):
             print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
             times.append((round(turn.start, 1), round(turn.end, 1), speaker))
         return times
 
+    # diarization with hysteresis
     def diarization_w_smoothing(self):
         pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
                                             use_auth_token="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")
@@ -54,7 +55,6 @@ class Diarization:
         speakers = {"SPEAKER_00": 0, "SPEAKER_01": 0, "SPEAKER_02": 0}
         error_msg = ""
         for turn, _, speaker in diarization.itertracks(yield_label=True):
-            # print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
             if len(times) >= 1 and times[-1][2] == speaker and abs(turn.start - times[-1][1]) < 1:
                 # applied smoothing, connecting to prev segment
                 times[-1] = ((times[-1][0], round(turn.end, 1), speaker))
@@ -77,65 +77,19 @@ class Diarization:
             print(times[i])
         return times, diarization, error_msg
 
-    def excel_diarization(self, times, excel_path):
-        df = pd.read_csv(excel_path, usecols=['timestamp', 'y_66', 'y_62'], engine='python', encoding='unicode_escape')
-        y_66, y_62 = df['y_66'], df['y_62']
-        timestamp = df['timestamp']
-        baseline = abs(y_66[1] - y_62[1])
-        final = []
-        j = 0
-        ctr_open, ctr_close = 0, 0
-        n = len(times)
-        for i in range(len(y_66)):
-            if timestamp[i] > times[j][1] + 1:  # we past prev speaker time
-                final.append((times[j][0], times[j][1], False))
-                j += 1
-                if j == n:
-                    print("finished, i is:", i)
-                    break
-            elif times[j][0] + 1 < timestamp[i] < times[j][1]:
-                if abs(y_66[i] - y_62[i]) > 3 + baseline:  # mouth open
-                    ctr_open += 1  # he is the speaker
-                    if ctr_open >= 2 and ctr_close >= 2:
-                        final.append((times[j][0], times[j][1], True))
-                        j += 1
-                        if j == n:
-                            print("finished, i is:", i)
-                            break
-                elif abs(y_66[i] - y_62[i]) < 1 + baseline:  # mouth close
-                    ctr_close += 1
-        return final
-
-    def compare_outputs(self, out1, out2):
-        for i in range(len(out1)):
-            if out1[i][2] == out2[i][2]:
-                print("conflict at i ", i, out1[i][0])
-        print("finished loop")
-
-    def run_s_i(self, csv1, wav):
-        self.wav = wav
-        time_speaker = self.pyannote_diarization()
-        final_out1 = self.excel_diarization(time_speaker, csv1)
-        print(final_out1)
-        return final_out1
-
-    def main_openface_excel(self):
-        csv2 = 'data/220_EMO_I.csv'
-        wav2 = "data/220_EMO_I.wav"
-        out2 = self.run_s_i(csv2, wav2)
-
-        csv1 = 'data/220_EMO_S.csv'
-        wav1 = "data/220_EMO_S.wav"
-        out1 = self.run_s_i(csv1, wav1)
-        self.compare_outputs(out1, out2)
 
     def pyannote_diarization_csv(self, times, path):
         start_times = list(zip(*times))[0]
         stop_times = list(zip(*times))[1]
         speakers = list(zip(*times))[2]
 
+        if speakers[0]=="SPEAKER_00":
+            new_speakers = ["I" if speaker=="SPEAKER_00" else "S" for speaker in speakers]
+        else:
+            new_speakers = ["S" if speaker == "SPEAKER_00" else "I" for speaker in speakers]
+
         # Create a DataFrame from the arrays
-        data = {'start': start_times, 'stop': stop_times, 'speaker': speakers}
+        data = {'start': start_times, 'stop': stop_times, 'speaker': new_speakers}
         df = pd.DataFrame(data)
 
         # Save the DataFrame to Excel
@@ -144,10 +98,6 @@ class Diarization:
 
         print(f"CSV file '{filename}' created successfully.")
 
-    def pyannote_diarization_xlsx(self, times, path):
-        start_times = list(zip(*times))[0]
-        stop_times = list(zip(*times))[1]
-        speakers = list(zip(*times))[2]
 
 
 def faisal_diarization():
@@ -196,6 +146,7 @@ def main_diarizaion(wav1):
     diarization_smooth, raw_diarization, error_msg = diarization.legal_diarization_smoothing()
     diarization.pyannote_diarization_csv(diarization_smooth, path='results/' + file_name)
 
+    #check if we got bad diarization, if so apply noise cleaning and try again
     if error_msg != "":
         noise_clean.clean_audio(wav1)
         print("diarization after noise cleaning")
@@ -223,7 +174,7 @@ def main_visualization(wav1, diarization_smooth, file_name):
 
 if __name__ == '__main__':
     print("diarization before noise cleaning")
-    wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/mp4_t_classify/6_TB_BOTH.wav"
+    wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/mp4_t_classify/5_TB_SUBJECT.wav"
     #wav1 ="data/mp4_t_classify/6_TB_BOTH.wav"
     diarization_smooth, file_name = main_diarizaion(wav1)
 
