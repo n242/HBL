@@ -75,7 +75,7 @@ class Diarization:
         print(error_msg)
         for i in range(len(times)):
             print(times[i])
-        return times, diarization
+        return times, diarization, error_msg
 
     def excel_diarization(self, times, excel_path):
         df = pd.read_csv(excel_path, usecols=['timestamp', 'y_66', 'y_62'], engine='python', encoding='unicode_escape')
@@ -193,10 +193,19 @@ def main_diarizaion(wav1):
         raise Exception("ERROR WRONG FILE TYPE")
 
     diarization = Diarization(wav1)
-    diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
+    diarization_smooth, raw_diarization, error_msg = diarization.legal_diarization_smoothing()
     diarization.pyannote_diarization_csv(diarization_smooth, path='results/' + file_name)
+
+    if error_msg != "":
+        noise_clean.clean_audio(wav1)
+        print("diarization after noise cleaning")
+        wav2 = wav1[:-4] + "_edited.wav"
+        diarization = Diarization(wav2)
+        diarization_smooth, raw_diarization, error_msg = diarization.legal_diarization_smoothing()
+        diarization.pyannote_diarization_csv(diarization_smooth, path='results/' + file_name)
+
     if flag:
-        os.remove(path)
+        os.remove(wav1)
     return diarization_smooth, file_name
 
 
@@ -211,12 +220,13 @@ def main_visualization(wav1, diarization_smooth, file_name):
 
     visual.create_vid_from_gif('visual_outputs/' + file_name + 'animation2.gif', "visual_outputs/" + file_name + ".mp4")
 
-if __name__ == '__main__':
-    path = "data/to_classify/40_Story_Marissa_1.wav"
-    noise_clean.clean_audio(path)
 
-    wav1 ="data/to_classify/40_Story_Marissa_1_edited.wav"
+if __name__ == '__main__':
+    print("diarization before noise cleaning")
+    wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/mp4_t_classify/6_TB_BOTH.wav"
+    #wav1 ="data/mp4_t_classify/6_TB_BOTH.wav"
     diarization_smooth, file_name = main_diarizaion(wav1)
+
 
     #if wanting to see visual results run:
     #main_visualization(wav1, diarization_smooth, file_name)
