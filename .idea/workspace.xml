@@ -3,7 +3,22 @@
   <component name="ChangeListManager">
     <list default="true" id="c0cce33c-1bc0-4353-a52a-e325f8999e8d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HBL_project_diary.pptx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/help_func.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/noise_clean.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/openface.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output_wavs/clean_ica.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output_wavs/out_librosa.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output_wavs/out_librosa2.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output_wavs/out_librosa3.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output_wavs/output.wav" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/visual_outputs/11_TB_Subject_1.mp4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/visual_outputs/11_TB_Subject_1animation2-old.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/visual_outputs/11_TB_Subject_1diarization-old.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/visual_outputs/Figure_1.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/visual_outputs/animation.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/visualization.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,16 +79,5 @@
       <updated>1685266734405</updated>
     </task>
     <servers />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>81</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>
