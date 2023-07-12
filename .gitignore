@@ -1,7 +1,7 @@
-#data/
+data/
 #output_wavs/
-#visual_outputs/
+visual_outputs/
 __pycache__/
 .idea/
-#results/
+results/
 pretrained_models/
