@@ -5,7 +5,7 @@ import matplotlib.animation as animation
 import matplotlib.lines as mlines
 from matplotlib import colors as mlpColors
 from pydub import AudioSegment
-from pydub.playback import play
+#from pydub.playback import play
 import moviepy.editor as mp
 
 _default_colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
