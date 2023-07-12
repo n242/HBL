@@ -48,11 +48,12 @@ To get started with this project, follow the steps below:
 
 
 ## Example Interview
-You can view an example output of an interview between two speakers. 
+You can view an example output of an interview between two speakers.
 
-[Link to Video](animation_example.mp4)
+![Alt Text](visual_outputs/interview_diarization.png)
 
-![Image](interview_diarization.png)
+And the full video at: 
+[example interview](visual_outputs/animation_example.mp4)
 
 ## Contribution Guidelines
 

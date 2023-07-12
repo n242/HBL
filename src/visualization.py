@@ -133,7 +133,7 @@ class Vizualization:
         song = AudioSegment.from_wav(self.wav)
         # Add above two audio segments
         final_song = one_sec_segment + song
-        out_audio = "visual_outputs/audio_w_silence.wav"
+        out_audio = "output_wavs/audio_w_silence.wav"
         final_song.export(out_audio, format="wav")# Either save modified audio
 
         clip = mp.VideoFileClip(gif_path)
