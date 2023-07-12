@@ -28,7 +28,7 @@ def clear_audio_wiener(in_wav, out_wav='output.wav'):
     wavfile.write(out_wav, sample_rate, filtered_data)
 
 
-def clear_audio_librosa(in_wav, out_wav='output.wav'):
+def clear_audio_librosa(in_wav, out_wav='output_wavs/clean_librosa.wav'):
     import librosa
     import soundfile as sf
 
@@ -51,7 +51,7 @@ def clear_audio_librosa(in_wav, out_wav='output.wav'):
     filtered_audio = librosa.istft(filtered_spec)
 
     # Save the filtered audio as a new WAV file
-    sf.write(out_wav, filtered_audio, sample_rate)
+    sf.write(out_wav, filtered_audio, int(sample_rate))
 
 
 def final_ica(my_wav):

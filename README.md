@@ -1,7 +1,7 @@
 # Speaker Diarization Project
 
 This repository contains the code and resources for a speaker diarization project. Speaker diarization is the task of segmenting an audio recording into homogeneous regions based on speaker identities. 
-This project aims to develop a speaker diarization system using [pyannote-audio](https://github.com/pyannote/pyannote-audio/).
+This project aims to develop a speaker diarization for two speakers using [pyannote-audio](https://github.com/pyannote/pyannote-audio/).
 
 ## Project Structure
 
@@ -45,6 +45,14 @@ To get started with this project, follow the steps below:
 1. visit hf.co/pyannote/speaker-diarization and hf.co/pyannote/segmentation and accept user conditions (only if requested)
 2. visit hf.co/settings/tokens to create an access token (only if you had to go through 1.)
 3. Insert your auth_token to main.py. 
+
+
+## Example Interview
+You can view an example output of an interview between two speakers. 
+
+[Link to Video](animation_example.mp4)
+
+![Image](interview_diarization.png)
 
 ## Contribution Guidelines
 
