@@ -1,7 +1,7 @@
 # Speaker Diarization Project
 
 This repository contains the code and resources for a speaker diarization project. Speaker diarization is the task of segmenting an audio recording into homogeneous regions based on speaker identities. 
-This project aims to develop a speaker diarization for two speakers using [pyannote-audio](https://github.com/pyannote/pyannote-audio/).
+This project aims to develop a speaker diarization for two speakers using unsupervised deep learning, in the form of neural network and clustering. 
 
 ## Project Structure
 
@@ -39,7 +39,7 @@ To get started with this project, follow the steps below:
 
 5. Train a model or download one from Hugging Face (see instructions below)
 
-6. Run the speaker diarization code via main.py, visualize the data.
+6. Add your input path to main.py and run the speaker diarization code, visualize the data.
 
 ## Use pre-trained module from Hugging Face
 1. visit hf.co/pyannote/speaker-diarization and hf.co/pyannote/segmentation and accept user conditions (only if requested)
@@ -55,17 +55,25 @@ You can view an example output of an interview between two speakers.
 And the full video at: 
 [example interview](visual_outputs/animation_example.mp4)
 
+
+## Using the repository
+
+When generating the .csv we assume the interviwer opens the interview. 
+
 ## Contribution Guidelines
 
-Contributions to this project are welcome. If you encounter any issues or have suggestions for improvements, please feel free to submit an issue or a pull request. Before making contributions, please review the guidelines outlined in the `CONTRIBUTING.md` file.
+Contributions to this project are welcome. If you encounter any issues or have suggestions for improvements, please feel free to submit an issue or a pull request. 
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
+We relied upon the following:
 
-Any acknowledgements or references to external resources can be mentioned in this section.
+[pyannote-audio](https://github.com/pyannote/pyannote-audio/)
+
+[noisereduce](https://github.com/timsainb/noisereduce/)
 
 ## Authors
 [Neta Oren](https://github.com/n242/) and [Faisal Omari](https://github.com/faisalomari/)

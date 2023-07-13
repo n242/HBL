@@ -2,9 +2,8 @@ from pyannote.audio import Pipeline
 import pandas as pd
 import soundfile as sf
 import os
-from tqdm import tqdm
 
-from help_func import *
+import help_func
 import noise_clean
 import visualization
 
@@ -31,7 +30,7 @@ class Diarization:
     # diarization with hysteresis
     def diarization_w_smoothing(self):
         pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
-                                            use_auth_token="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")
+                                            use_auth_token=self.auth_token)
         diarization = pipeline(self.wav)
         times = []
         for turn, _, speaker in diarization.itertracks(yield_label=True):
@@ -48,7 +47,7 @@ class Diarization:
     # diarization with hysteresis + check it's valid diarization
     def legal_diarization_smoothing(self):
         pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization",
-                                            use_auth_token="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")
+                                            use_auth_token=self.auth_token)
         diarization = pipeline(self.wav)
         times = []
         speakers = {"SPEAKER_00": 0, "SPEAKER_01": 0, "SPEAKER_02": 0}
@@ -76,7 +75,7 @@ class Diarization:
             print(times[i])
         return times, diarization, error_msg
 
-
+    #generating .csv from diarization
     def pyannote_diarization_csv(self, times, path):
         start_times = list(zip(*times))[0]
         stop_times = list(zip(*times))[1]
@@ -99,51 +98,59 @@ class Diarization:
 
 
 
-def faisal_diarization():
-    # create_data_for_rest()
-    path = "/home/faisal/Desktop/interview_example1.wav"
-    file_name = os.path.splitext(os.path.basename(path))[0]
-    flag = False
-    if(get_file_format(path) == 'MP4'):
-        new_file_path = os.path.splitext(path)[0] + "." + "wav"
-        convert_mp4_to_wav(path, new_file_path)
-        path = new_file_path
-        flag = True
-    elif(get_file_format(path) == 'Unknown'):
-        raise Exception("ERROR WRONG FILE TYPE")
-    
-    print("diarizing: " + path)
+#def faisal_diarization():
+    # # create_data_for_rest()
+    # path = "/home/faisal/Desktop/interview_example1.wav"
+    # file_name = os.path.splitext(os.path.basename(path))[0]
+    # flag = False
+    # if(get_file_format(path) == 'MP4'):
+    #     new_file_path = os.path.splitext(path)[0] + "." + "wav"
+    #     convert_mp4_to_wav(path, new_file_path)
+    #     path = new_file_path
+    #     flag = True
+    # elif(get_file_format(path) == 'Unknown'):
+    #     raise Exception("ERROR WRONG FILE TYPE")
+    #
+    # print("diarizing: " + path)
+    #
+    # data, sampling_rate = sf.read(path)
+    # visual = visualization.Vizualization(wav1, sampling_rate, data)
+    #
+    # diarization = Diarization(path)
+    # diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
+    # if flag:
+    #     os.remove(path)
+    # new_diarization = diarization_get_spaker(diarization_smooth)
+    # diarization.pyannote_diarization_csv(new_diarization, path='/home/faisal/Desktop/'+file_name)
+    # list_speaker_times = visual.diarization_for_plot1(new_diarization)
+    # visual.plot_diarization(list_speaker_times, path='/home/faisal/Desktop/' + file_name)
+    # visual.plot_animation2(list_speaker_times, '/home/faisal/Desktop/' + file_name, path)  # Animation with background audio, works with diarization_for_plot1
 
-    data, sampling_rate = sf.read(path)
-    visual = visualization.Vizualization(wav1, sampling_rate, data)
 
-    diarization = Diarization(path)
-    diarization_smooth, raw_diarization = diarization.legal_diarization_smoothing()
-    if flag:
-        os.remove(path)
-    new_diarization = diarization_get_spaker(diarization_smooth)
-    diarization.pyannote_diarization_csv(new_diarization, path='/home/faisal/Desktop/'+file_name)
-    list_speaker_times = visual.diarization_for_plot1(new_diarization)
-    visual.plot_diarization(list_speaker_times, path='/home/faisal/Desktop/' + file_name)
-    visual.plot_animation2(list_speaker_times, '/home/faisal/Desktop/' + file_name, path)  # Animation with background audio, works with diarization_for_plot1
-
-
-
+# create diarization and output to .csv
 def main_diarizaion(wav1, auth_token):
     file_name = os.path.splitext(os.path.basename(wav1))[0]
     print("diarizing: " + wav1)
+    # # if file is .mp4 format, then transform to .wav format
     flag = False
-    if (get_file_format(wav1) == 'MP4'):
+    if (help_func.get_file_format(wav1) == 'MP4'):
         new_file_path = os.path.splitext(wav1)[0] + "." + "wav"
-        convert_mp4_to_wav(wav1, new_file_path)
+        help_func.convert_mp4_to_wav(wav1, new_file_path)
         wav1 = new_file_path
         flag = True
-    elif (get_file_format(wav1) == 'Unknown'):
+    elif (help_func.get_file_format(wav1) == 'Unknown'):
         raise Exception("ERROR WRONG FILE TYPE")
 
+    # apply diarization
     diarization = Diarization(wav1, auth_token)
     diarization_smooth, raw_diarization, error_msg = diarization.legal_diarization_smoothing()
-    diarization.pyannote_diarization_csv(diarization_smooth, path='results/' + file_name)
+
+    #generating .csv file of the diarization output
+    current_directory = os.getcwd()
+    # Specify the path to the "results" folder relative to the current directory
+    results_folder = os.path.join(current_directory, '..', 'results/')
+
+    diarization.pyannote_diarization_csv(diarization_smooth, path=results_folder + file_name)
 
     #check if we got bad diarization, if so apply noise cleaning and try again
     if error_msg != "":
@@ -152,29 +159,37 @@ def main_diarizaion(wav1, auth_token):
         wav2 = wav1[:-4] + "_edited.wav"
         diarization = Diarization(wav2, auth_token)
         diarization_smooth, raw_diarization, error_msg = diarization.legal_diarization_smoothing()
-        diarization.pyannote_diarization_csv(diarization_smooth, path='results/' + file_name)
+        diarization.pyannote_diarization_csv(diarization_smooth, path=results_folder + file_name)
 
-    if flag:
-        os.remove(wav1)
+    # if flag:
+    #     os.remove(wav1)
     return diarization_smooth, file_name
 
-
+# main function to generate .png plot file, .mp4 animation of the diarization
 def main_visualization(wav1, diarization_smooth, file_name):
-
     data, sampling_rate = sf.read(wav1)
     visual = visualization.Vizualization(wav1, sampling_rate, data)
     list_speaker_times = visual.diarization_for_plot1(diarization_smooth)
-    visual.plot_diarization(list_speaker_times, path='visual_outputs/' + file_name)
-    visual.plot_animation2(list_speaker_times,
-                           path='visual_outputs/' + file_name)  # Animation with background audio, works with diarization_for_plot1
+    current_directory = os.getcwd()
+    # Specify the path to the "results" folder relative to the current directory
+    visuals_folder = os.path.join(current_directory, '..', 'visual_outputs/')
 
-    visual.create_vid_from_gif('visual_outputs/' + file_name + 'animation2.gif', "visual_outputs/" + file_name + ".mp4")
+    visual.plot_diarization(list_speaker_times, path=visuals_folder + file_name)
+    visual.plot_animation2(list_speaker_times,
+                           path=visuals_folder + + file_name)  # Animation with background audio, works with diarization_for_plot1
+
+    visual.create_vid_from_gif(visuals_folder + + file_name + 'animation2.gif', visuals_folder + + file_name + ".mp4")
 
 
 if __name__ == '__main__':
     print("diarization before noise cleaning")
-    wav1 ="data/mp4_t_classify/6_TB_BOTH.wav"
+    # input can be .mp4 or .wav file
+    #wav1 ="data/mp4_t_classify/6_TB_BOTH.wav"
+    wav1 = "E:/myFolder/uni/masters/2nd_semestru/human_behavior_lab/noise_clean_recordings/mp4_t_classify/5_TB_SUBJECT.wav"
+
+    # replace the auth token with your input
     auth_token = "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" #TODO: remove later
+    # diarize
     diarization_smooth, file_name = main_diarizaion(wav1, auth_token)
 
 
