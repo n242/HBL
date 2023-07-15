@@ -126,17 +126,18 @@ class Vizualization:
         # Save the animation as a GIF
         ani.save(path + 'animation2.gif', writer='pillow')
 
-    def create_vid_from_gif(self, gif_path, out_path):
+    def create_vid_from_gif(self, gif_path, out_audio_path, out_vid_path):
         # create 2 sec of silence audio segment
         one_sec_segment = AudioSegment.silent(duration=4000)  # duration in milliseconds
         # read wav file to an audio segment
         song = AudioSegment.from_wav(self.wav)
         # Add above two audio segments
         final_song = one_sec_segment + song
-        out_audio = "output_wavs/audio_w_silence.wav"
+
+        out_audio = out_audio_path +"audio_w_silence.wav"
         final_song.export(out_audio, format="wav")# Either save modified audio
 
         clip = mp.VideoFileClip(gif_path)
         video = clip.set_audio(mp.AudioFileClip(out_audio))
-        video.write_videofile(out_path)
+        video.write_videofile(out_vid_path)
 
